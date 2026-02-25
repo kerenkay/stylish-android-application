@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="30dp"
+    android:layout_margin="8dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgMain"
+            android:layout_width="0dp"
+            android:layout_height="350dp"
+            android:layout_margin="6dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/imgTopIcon"
+            app:shapeAppearanceOverlay="@style/ShapeRounded16"
+            tools:srcCompat="@drawable/img_outfit" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/lblUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="12dp"
+            android:text="user_name"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/imgMain"
+            app:layout_constraintTop_toBottomOf="@+id/imgMain" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/lblDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Outfit Description"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/lblUser"
+            app:layout_constraintTop_toBottomOf="@+id/lblUser"
+            android:textColor="@android:color/black" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imgTopIcon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="@+id/lblDescription"
+            app:layout_constraintTop_toBottomOf="@+id/lblDescription"
+            app:srcCompat="@drawable/img_shirt" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/lblTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="zara"
+            android:textSize="14sp"
+            app:layout_constraintBaseline_toBottomOf="@id/imgTopIcon"
+            app:layout_constraintStart_toEndOf="@+id/imgTopIcon" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imgBottomIcon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            app:layout_constraintBottom_toBottomOf="@+id/imgTopIcon"
+            app:layout_constraintStart_toEndOf="@+id/lblTop"
+            app:layout_constraintTop_toTopOf="@+id/imgTopIcon"
+            android:layout_marginStart="15dp"
+            app:srcCompat="@drawable/img_pants" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/lblBottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="castro"
+            android:textSize="14sp"
+            app:layout_constraintBaseline_toBottomOf="@id/imgBottomIcon"
+            app:layout_constraintStart_toEndOf="@+id/imgBottomIcon" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imgTargetIcon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            app:layout_constraintBottom_toBottomOf="@+id/imgBottomIcon"
+            app:layout_constraintStart_toEndOf="@+id/lblBottom"
+            app:layout_constraintTop_toTopOf="@+id/imgBottomIcon"
+            android:layout_marginStart="15dp"
+            app:srcCompat="@drawable/img_target" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/lbTarget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="work"
+            android:textSize="14sp"
+            app:layout_constraintBaseline_toBottomOf="@id/imgTargetIcon"
+            app:layout_constraintStart_toEndOf="@+id/imgTargetIcon" />
+
+<!--        <Space-->
+<!--            android:id="@+id/space"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="24dp"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/lbOccasion" />-->
+
+        <!--        <com.google.android.material.button.MaterialButton-->
+        <!--            android:id="@+id/btnDetails"-->
+        <!--            style="@style/Widget.Material3.Button.OutlinedButton"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_marginEnd="18dp"-->
+        <!--            android:text="details"-->
+        <!--            android:textColor="#000000"-->
+        <!--            app:icon="@drawable/ic_continue"-->
+        <!--            app:iconGravity="end"-->
+        <!--            app:iconSize="22dp"-->
+        <!--            app:iconTint="#000000"-->
+        <!--            app:layout_constraintBottom_toTopOf="@+id/space"-->
+        <!--            app:layout_constraintEnd_toEndOf="parent"-->
+        <!--            app:strokeColor="#BBBBBB" />-->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLike"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:padding="0dp"
+            app:icon="@drawable/ic_heart"
+            app:iconGravity="textStart"
+            app:iconTint="#000000"
+            app:layout_constraintEnd_toEndOf="@+id/imgMain"
+            app:layout_constraintTop_toBottomOf="@+id/imgMain"/>
+
+        <TextView
+            android:id="@+id/lblLikeCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="@+id/btnLike"
+            app:layout_constraintStart_toStartOf="@id/btnLike"
+            app:layout_constraintTop_toBottomOf="@+id/btnLike" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDelete"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:padding="0dp"
+            app:icon="@drawable/img_trash"
+            app:iconGravity="textStart"
+            app:iconTint="#000000"
+            app:layout_constraintEnd_toEndOf="@+id/imgMain"
+            app:layout_constraintTop_toTopOf="@+id/imgMain"/>
+
+        <!--        <com.google.android.material.card.MaterialCardView-->
+        <!--                    android:layout_width="wrap_content"-->
+        <!--                    android:layout_height="wrap_content"-->
+        <!--                    android:layout_marginTop="11dp"-->
+        <!--                    android:layout_marginEnd="11dp"-->
+        <!--                    app:cardCornerRadius="50dp"-->
+        <!--                    app:layout_constraintEnd_toEndOf="@+id/imgMain"-->
+        <!--                    app:layout_constraintTop_toTopOf="@+id/imgMain"-->
+        <!--                    app:strokeWidth="0dp">-->
+        <!--        -->
+        <!--                    <androidx.appcompat.widget.LinearLayoutCompat-->
+        <!--                        android:layout_width="wrap_content"-->
+        <!--                        android:layout_height="wrap_content"-->
+        <!--                        android:orientation="horizontal"-->
+        <!--                        android:paddingHorizontal="12dp"-->
+        <!--                        android:paddingVertical="5dp">-->
+        <!--        -->
+        <!--                        <androidx.appcompat.widget.AppCompatImageView-->
+        <!--                            android:id="@+id/imgRatingIcon"-->
+        <!--                            android:layout_width="18dp"-->
+        <!--                            android:layout_height="18dp"-->
+        <!--                            android:tint="#ffc701"-->
+        <!--                            app:srcCompat="@drawable/ic_star" />-->
+        <!--        -->
+        <!--                        <com.google.android.material.textview.MaterialTextView-->
+        <!--                            android:id="@+id/lblRating"-->
+        <!--                            android:layout_width="wrap_content"-->
+        <!--                            android:layout_height="wrap_content"-->
+        <!--                            android:layout_marginStart="8dp"-->
+        <!--                            android:text="0.0"-->
+        <!--                            android:textStyle="bold" />-->
+        <!--        -->
+        <!--        -->
+        <!--                    </androidx.appcompat.widget.LinearLayoutCompat>-->
+        <!--        -->
+        <!--        -->
+        <!--                </com.google.android.material.card.MaterialCardView>-->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
