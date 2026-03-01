@@ -4,10 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.stylish_android_application.databinding.ItemProfileBinding
 
 class ProfileAdapter(
     private val posts: List<Post>,
@@ -15,14 +14,13 @@ class ProfileAdapter(
     private val onPostLongClick: (Post) -> Unit
 ) : RecyclerView.Adapter<ProfileAdapter.ProfileViewHolder>() {
 
-    class ProfileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val image: ImageView = itemView.findViewById(R.id.imgGridPost)
-    }
+    // --- ה-ViewHolder מקבל עכשיו את ה-Binding ---
+    class ProfileViewHolder(val binding: ItemProfileBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProfileViewHolder {
-        // ודאי ששם ה-XML כאן תואם לקובץ שיצרת (item_profile או item_profile_post)
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_profile, parent, false)
-        return ProfileViewHolder(view)
+        // --- מנפחים את ה-Binding ישירות מה-XML ---
+        val binding = ItemProfileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ProfileViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ProfileViewHolder, position: Int) {
@@ -32,18 +30,19 @@ class ProfileAdapter(
             try {
                 val decodedBytes = Base64.decode(post.imageUrl, Base64.DEFAULT)
 
-                // --- התיקון: טעינה חכמה וחסכונית בזיכרון ---
-                // אנו מבקשים תמונה בגודל 200x200 בערך, שזה מספיק לגריד
+                // טעינה חכמה וחסכונית בזיכרון (כמו שכבר עשינו)
                 val decodedBitmap = decodeSampledBitmapFromByteArray(decodedBytes, 200, 200)
 
-                holder.image.setImageBitmap(decodedBitmap)
+                // --- גישה לתמונה דרך ה-Binding ---
+                holder.binding.imgGridPost.setImageBitmap(decodedBitmap)
             } catch (e: Exception) {
-                holder.image.setImageResource(R.drawable.img_outfit)
+                holder.binding.imgGridPost.setImageResource(R.drawable.img_outfit)
             }
         }
 
-        holder.itemView.setOnClickListener { onPostClick(post) }
-        holder.itemView.setOnLongClickListener {
+        // --- לחיצות ---
+        holder.binding.root.setOnClickListener { onPostClick(post) }
+        holder.binding.root.setOnLongClickListener {
             onPostLongClick(post)
             true
         }
@@ -51,9 +50,8 @@ class ProfileAdapter(
 
     override fun getItemCount() = posts.size
 
-    // --- פונקציות עזר למניעת קריסה (OutOfMemory) ---
+    // --- פונקציות עזר למניעת קריסה (OutOfMemory) - נשארות כמו שהן ---
 
-    // 1. פונקציה שמחשבת פי כמה להקטין את התמונה
     private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
         val (height: Int, width: Int) = options.run { outHeight to outWidth }
         var inSampleSize = 1
@@ -69,17 +67,13 @@ class ProfileAdapter(
         return inSampleSize
     }
 
-    // 2. פונקציה שטוענת את התמונה בגודל המוקטן
     private fun decodeSampledBitmapFromByteArray(data: ByteArray, reqWidth: Int, reqHeight: Int): Bitmap {
-        // שלב א: בודקים מה הגודל המקורי של התמונה בלי לטעון אותה לזיכרון
         return BitmapFactory.Options().run {
             inJustDecodeBounds = true
             BitmapFactory.decodeByteArray(data, 0, data.size, this)
 
-            // שלב ב: חישוב יחס ההקטנה
             inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
 
-            // שלב ג: טעינת התמונה האמיתית כשהיא מוקטנת
             inJustDecodeBounds = false
             BitmapFactory.decodeByteArray(data, 0, data.size, this)
         }

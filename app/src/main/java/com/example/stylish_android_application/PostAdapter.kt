@@ -1,85 +1,95 @@
 package com.example.stylish_android_application
 
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.button.MaterialButton
+// חשוב: נוודא שה-Binding מיובא
+import com.example.stylish_android_application.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
 
-// האדפטר מקבל עכשיו גם "Callback" - פונקציה שתופעל כשלוחצים על לייק
 class PostsAdapter(
-    private val posts: List<Post>,
-    private val onLikeClicked: (Post) -> Unit // פונקציה חיצונית לטיפול בלייק
+    private var posts: List<Post>,
+    private val onLikeClicked: (Post) -> Unit,
+    private val onPostClicked: (Post) -> Unit
 ) : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
 
-    // מזהה המשתמש הנוכחי (כדי שנדע אם לצבוע את הלב או לא)
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-    class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imgMain: ImageView = itemView.findViewById(R.id.imgMain)
-        val lblUser: TextView = itemView.findViewById(R.id.lblUser)
-        val lblDescription: TextView = itemView.findViewById(R.id.lblDescription)
-        val lblTop: TextView = itemView.findViewById(R.id.lblTop)
-        val lblBottom: TextView = itemView.findViewById(R.id.lblBottom)
-        val lbTarget: TextView = itemView.findViewById(R.id.lbTarget)
-        val btnLike: MaterialButton = itemView.findViewById(R.id.btnLike)
-
-        val lblLikeCount: TextView = itemView.findViewById(R.id.lblLikeCount)
-    }
+    // --- שינוי 1: ה-ViewHolder מקבל עכשיו את ה-Binding במקום View רגיל ---
+    // שימי לב שמחקנו מפה את כל ה-findViewById!
+    class PostViewHolder(val binding: ItemPostBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
-        return PostViewHolder(view)
+        // --- שינוי 2: מנפחים את ה-Binding במקום ליצור View ---
+        val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return PostViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
 
-        holder.lblUser.text = post.userName
-        holder.lblDescription.text = post.description
-        holder.lblTop.text = post.brandTop
-        holder.lblBottom.text = post.brandBottom
-        holder.lbTarget.text = post.occasion
-        holder.lblLikeCount.text = post.likedBy.size.toString()
+        // --- שינוי 3: מעכשיו ניגשים לכל השדות דרך holder.binding ---
+        holder.binding.lblUser.text = post.userName
+        holder.binding.lblDescription.text = post.description
+        holder.binding.lbTarget.text = post.occasion
+        holder.binding.lblLikeCount.text = post.likedBy.size.toString()
+        setupBrandView(post.brandTop, holder.binding.imgTopIcon, holder.binding.lblTop)
+        setupBrandView(post.brandBottom, holder.binding.imgBottomIcon, holder.binding.lblBottom)
+        setupBrandView(post.brandJacket, holder.binding.imgJacketIcon, holder.binding.lblJacket)
+        setupBrandView(post.brandShoes, holder.binding.imgShoesIcon, holder.binding.lblShoes)
+        setupBrandView(post.brandBag, holder.binding.imgBagIcon, holder.binding.lblBag)
+        setupBrandView(post.brandDress, holder.binding.imgDressIcon, holder.binding.lblDress)
 
-
-        // --- טיפול בתמונה ---
+        // --- תמונה ---
         if (post.imageUrl.isNotEmpty()) {
             try {
                 val decodedBytes = Base64.decode(post.imageUrl, Base64.DEFAULT)
                 val decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                holder.imgMain.setImageBitmap(decodedBitmap)
+                holder.binding.imgMain.setImageBitmap(decodedBitmap)
             } catch (e: Exception) {
-                holder.imgMain.setImageResource(R.drawable.img_outfit)
+                holder.binding.imgMain.setImageResource(R.drawable.img_outfit)
             }
         }
 
-        // --- טיפול בלייקים (החלק החדש) ---
-
-        // 1. בדיקה: האם המשתמש שלי נמצא ברשימת הלייקים של הפוסט?
+        // --- לוגיקה ללייקים ---
         val isLikedByMe = post.likedBy.contains(currentUserId)
-
-        // 2. עיצוב הכפתור בהתאם
         if (isLikedByMe) {
-            holder.btnLike.setIconResource(R.drawable.ic_heart_full) // לב מלא (אדום)
-            holder.btnLike.setIconTintResource(R.color.red) // צובע באדום (אם יש לך צבע כזה)
+            holder.binding.btnLike.setIconResource(R.drawable.ic_heart_full)
+            holder.binding.btnLike.setIconTintResource(R.color.red)
         } else {
-            holder.btnLike.setIconResource(R.drawable.ic_heart) // לב ריק
-            holder.btnLike.setIconTintResource(android.R.color.black) // צובע בשחור
+            holder.binding.btnLike.setIconResource(R.drawable.ic_heart)
+            holder.binding.btnLike.setIconTintResource(android.R.color.black)
         }
 
-        // 3. לחיצה על הכפתור
-        holder.btnLike.setOnClickListener {
-            onLikeClicked(post) // מפעיל את הפונקציה בפרגמנט
-            holder.lblLikeCount.text = post.likedBy.size.toString()
+        // --- לחיצות ---
+        holder.binding.btnLike.setOnClickListener {
+            onLikeClicked(post)
+            holder.binding.lblLikeCount.text = post.likedBy.size.toString()
+        }
+
+        holder.itemView.setOnClickListener {
+            onPostClicked(post)
         }
     }
 
     override fun getItemCount() = posts.size
+
+    fun updateList(newPosts: List<Post>) {
+        posts = newPosts
+        notifyDataSetChanged()
+    }
+
+    private fun setupBrandView(brandName: String, iconView: View, textView: android.widget.TextView) {
+        if (brandName.isEmpty()) {
+            iconView.visibility = View.GONE
+            textView.visibility = View.GONE
+        } else {
+            iconView.visibility = View.VISIBLE
+            textView.visibility = View.VISIBLE
+            textView.text = brandName
+        }
+    }
 }

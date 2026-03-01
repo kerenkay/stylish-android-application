@@ -22,6 +22,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import android.media.ExifInterface
+import android.graphics.Matrix
 
 class AddPostFragment : Fragment() {
 
@@ -131,16 +133,6 @@ class AddPostFragment : Fragment() {
             finalOccasion = binding.etOccasionOther.text.toString().trim()
         }
 
-//        val post = hashMapOf(
-//            "userId" to currentUser.uid,
-//            "userName" to name,
-//            "imageUrl" to imageBase64,
-//            "description" to binding.etDescription.text.toString().trim(),
-//            "brandTop" to binding.etBrandTop.text.toString().trim(),
-//            "brandBottom" to binding.etBrandBottom.text.toString().trim(),
-//            "occasion" to finalOccasion,
-//            "timestamp" to System.currentTimeMillis()
-//        )
         val post = Post(
             userId = currentUser.uid,
             userName = name, // <--- הנה השם החדש והיפה!
@@ -149,6 +141,10 @@ class AddPostFragment : Fragment() {
             brandTop = binding.etBrandTop.text.toString().trim(),
             brandBottom = binding.etBrandBottom.text.toString().trim(),
             occasion = finalOccasion,
+            brandJacket = binding.etJacket.text.toString().trim(),
+            brandShoes = binding.etShoes.text.toString().trim(),
+            brandBag = binding.etBag.text.toString().trim(),
+            brandDress = binding.etDress.text.toString().trim(),
             timestamp = System.currentTimeMillis()
         )
 
@@ -187,8 +183,12 @@ class AddPostFragment : Fragment() {
     }
 
     private fun uriToBitmap(uri: Uri): Bitmap {
-        val inputStream: InputStream? = requireContext().contentResolver.openInputStream(uri)
+        // 1. קריאת התמונה מהזיכרון
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
         var bitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+
+        // 2. הקטנת התמונה (כדי שלא נקבל OutOfMemory)
         val maxDimension = 600
         if (bitmap.width > maxDimension || bitmap.height > maxDimension) {
             val ratio = bitmap.width.toDouble() / bitmap.height.toDouble()
@@ -196,7 +196,34 @@ class AddPostFragment : Fragment() {
             val newHeight = if (ratio > 1) (maxDimension / ratio).toInt() else maxDimension
             bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
         }
-        return bitmap
+
+        // 3. התיקון: קריאת ה-Exif וסיבוב התמונה במידת הצורך
+        var rotatedBitmap = bitmap
+        try {
+            // פותחים זרם חדש כדי לקרוא את המידע הנסתר
+            val exifInputStream = requireContext().contentResolver.openInputStream(uri)
+            if (exifInputStream != null) {
+                val exif = ExifInterface(exifInputStream)
+                val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+
+                val matrix = Matrix()
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                }
+
+                // אם זיהינו שצריך לסובב, אנחנו מסובבים את ה-Bitmap
+                if (orientation != ExifInterface.ORIENTATION_NORMAL && orientation != ExifInterface.ORIENTATION_UNDEFINED) {
+                    rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                }
+                exifInputStream.close()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return rotatedBitmap
     }
 
     private fun bitmapToBase64(bitmap: Bitmap): String {

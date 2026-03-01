@@ -34,9 +34,21 @@ class FeedFragment : Fragment() {
 
     private fun setupRecyclerView() {
         // כאן אנחנו מעבירים לאדפטר את הפונקציה המטפלת בלייק
-        adapter = PostsAdapter(postsList) { post ->
-            toggleLike(post)
-        }
+        adapter = PostsAdapter(
+            postsList,
+            onLikeClicked = { post -> toggleLike(post) },
+            onPostClicked = { post ->
+                // אותו קוד מעבר כמו בחיפוש
+                val fragment = PostDetailsFragment()
+                val bundle = Bundle()
+                bundle.putSerializable("post", post)
+                fragment.arguments = bundle
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        )
         binding.rvPosts.layoutManager = LinearLayoutManager(context)
         binding.rvPosts.adapter = adapter
     }

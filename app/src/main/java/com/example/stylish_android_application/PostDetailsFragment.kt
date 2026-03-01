@@ -45,10 +45,15 @@ class PostDetailsFragment : Fragment() {
         // גישה לשדות בתוך ה-Include דרך fullPostCard
         binding.fullPostCard.lblUser.text = post.userName
         binding.fullPostCard.lblDescription.text = post.description
-        binding.fullPostCard.lblTop.text = post.brandTop
-        binding.fullPostCard.lblBottom.text = post.brandBottom
+        val card = binding.fullPostCard
+        setupBrandDetailView(post.brandTop, card.imgTopIcon, card.lblTop)
+        setupBrandDetailView(post.brandBottom, card.imgBottomIcon, card.lblBottom)
+        setupBrandDetailView(post.brandJacket, card.imgJacketIcon, card.lblJacket)
+        setupBrandDetailView(post.brandShoes, card.imgShoesIcon, card.lblShoes)
+        setupBrandDetailView(post.brandBag, card.imgBagIcon, card.lblBag)
+        setupBrandDetailView(post.brandDress, card.imgDressIcon, card.lblDress)
         binding.fullPostCard.lbTarget.text = post.occasion
-        binding.fullPostCard.lblLikeCount.text = "${post.likedBy.size} likes"
+        binding.fullPostCard.lblLikeCount.text = "${post.likedBy.size}"
 
         if (post.imageUrl.isNotEmpty()) {
             try {
@@ -143,5 +148,16 @@ class PostDetailsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun setupBrandDetailView(brandName: String, iconView: View, textView: android.widget.TextView) {
+        if (brandName.isEmpty()) {
+            iconView.visibility = View.GONE
+            textView.visibility = View.GONE
+        } else {
+            iconView.visibility = View.VISIBLE
+            textView.visibility = View.VISIBLE
+            textView.text = brandName
+        }
     }
 }

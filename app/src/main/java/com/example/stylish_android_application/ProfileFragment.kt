@@ -79,26 +79,24 @@ class ProfileFragment : Fragment() {
     }
 
     // העלאת תמונת פרופיל ושמירה
-    private fun uploadProfileImage(uri: Uri) {
+    private fun uploadProfileImage(uri: android.net.Uri) {
         try {
-            val inputStream = requireContext().contentResolver.openInputStream(uri)
-            val bitmap = BitmapFactory.decodeStream(inputStream)
+            // שימוש בפונקציה החדשה שמסובבת ומקטינה את התמונה!
+            val finalBitmap = getRotatedProfileBitmap(uri) ?: return
 
-            // הקטנת תמונה (חשוב מאוד לפרופיל!)
-            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 300, true)
-
-            val baos = ByteArrayOutputStream()
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
-            val base64Image = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
+            val baos = java.io.ByteArrayOutputStream()
+            finalBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, baos)
+            val base64Image = android.util.Base64.encodeToString(baos.toByteArray(), android.util.Base64.DEFAULT)
 
             val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-            // שמירה בקולקציית users
+            // שמירה ב-Firestore
             val userData = hashMapOf("profileImageUrl" to base64Image)
             FirebaseFirestore.getInstance().collection("users").document(uid)
-                .set(userData) // set יוצר או מעדכן את המסמך
+                .set(userData)
                 .addOnSuccessListener {
-                    binding.imgProfile.setImageBitmap(scaledBitmap)
+                    // עדכון העיגול בתצוגה לתמונה הישרה
+                    binding.imgProfile.setImageBitmap(finalBitmap)
                     Toast.makeText(context, "Profile updated!", Toast.LENGTH_SHORT).show()
                 }
         } catch (e: Exception) {
@@ -171,6 +169,50 @@ class ProfileFragment : Fragment() {
                 Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
                 // אין צורך למחוק ידנית, ה-SnapshotListener יעשה את זה לבד
             }
+    }
+
+    private fun getRotatedProfileBitmap(uri: android.net.Uri): android.graphics.Bitmap? {
+        // קריאת התמונה מהזיכרון
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+        var bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+
+        if (bitmap == null) return null
+
+        // הקטנה משמעותית לפרופיל (300x300)
+        val maxDimension = 300
+        if (bitmap.width > maxDimension || bitmap.height > maxDimension) {
+            val ratio = bitmap.width.toDouble() / bitmap.height.toDouble()
+            val newWidth = if (ratio > 1) maxDimension else (maxDimension * ratio).toInt()
+            val newHeight = if (ratio > 1) (maxDimension / ratio).toInt() else maxDimension
+            bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+        }
+
+        // סיבוב התמונה לפי המידע הנסתר (Exif)
+        var rotatedBitmap = bitmap
+        try {
+            val exifInputStream = requireContext().contentResolver.openInputStream(uri)
+            if (exifInputStream != null) {
+                val exif = android.media.ExifInterface(exifInputStream)
+                val orientation = exif.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL)
+
+                val matrix = android.graphics.Matrix()
+                when (orientation) {
+                    android.media.ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                    android.media.ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                    android.media.ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                }
+
+                if (orientation != android.media.ExifInterface.ORIENTATION_NORMAL && orientation != android.media.ExifInterface.ORIENTATION_UNDEFINED) {
+                    rotatedBitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                }
+                exifInputStream.close()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return rotatedBitmap
     }
 
     override fun onDestroyView() {
