@@ -10,7 +10,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingBottom="16dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgMain"
@@ -24,209 +25,18 @@
             app:shapeAppearanceOverlay="@style/ShapeRounded16"
             tools:srcCompat="@drawable/img_outfit" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="6dp"
-            android:text="user_name"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/imgMain"
-            app:layout_constraintTop_toBottomOf="@+id/imgMain" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Outfit Description"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="10dp"
-            app:layout_constraintStart_toStartOf="@+id/lblUser"
-            app:layout_constraintTop_toBottomOf="@+id/lblUser"
-            android:textColor="@android:color/black" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgTopIcon"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_marginTop="10dp"
-            app:layout_constraintStart_toStartOf="@+id/lblDescription"
-            app:layout_constraintTop_toBottomOf="@+id/lblDescription"
-            app:srcCompat="@drawable/img_shirt" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblTop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="zara"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBottomOf="@id/imgTopIcon"
-            app:layout_constraintStart_toEndOf="@+id/imgTopIcon" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgBottomIcon"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="10dp"
-            app:layout_constraintBottom_toBottomOf="@+id/imgTopIcon"
-            app:layout_constraintStart_toEndOf="@+id/lblTop"
-            app:layout_constraintTop_toBottomOf="@+id/lblDescription"
-            app:srcCompat="@drawable/img_pants" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblBottom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="castro"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBottomOf="@id/imgBottomIcon"
-            app:layout_constraintStart_toEndOf="@+id/imgBottomIcon" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgDressIcon"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="10dp"
-            app:layout_constraintBottom_toBottomOf="@+id/imgBottomIcon"
-            app:layout_constraintStart_toEndOf="@+id/lblBottom"
-            app:layout_constraintTop_toBottomOf="@+id/lblDescription"
-            app:srcCompat="@drawable/img_dress" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblDress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="castro"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBottomOf="@id/imgDressIcon"
-            app:layout_constraintStart_toEndOf="@+id/imgDressIcon" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgTargetIcon"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="10dp"
-            app:layout_constraintBottom_toBottomOf="@+id/imgBottomIcon"
-            app:layout_constraintStart_toEndOf="@+id/lblDress"
-            app:layout_constraintTop_toBottomOf="@+id/lblDescription"
-            app:srcCompat="@drawable/img_target" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lbTarget"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="work"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBottomOf="@id/imgTargetIcon"
-            app:layout_constraintStart_toEndOf="@+id/imgTargetIcon" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgJacketIcon"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_marginTop="10dp"
-            app:layout_constraintStart_toStartOf="@+id/imgTopIcon"
-            app:layout_constraintTop_toBottomOf="@+id/imgTopIcon"
-            app:srcCompat="@drawable/img_jacket" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblJacket"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="zara"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBottomOf="@id/imgJacketIcon"
-            app:layout_constraintStart_toEndOf="@+id/imgJacketIcon" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgShoesIcon"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            app:layout_constraintBottom_toBottomOf="@+id/imgJacketIcon"
-            app:layout_constraintStart_toEndOf="@+id/lblJacket"
-            app:layout_constraintTop_toTopOf="@+id/imgJacketIcon"
-            android:layout_marginStart="15dp"
-            app:srcCompat="@drawable/img_shoes" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblShoes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="castro"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBottomOf="@id/imgShoesIcon"
-            app:layout_constraintStart_toEndOf="@+id/imgShoesIcon" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgBagIcon"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            app:layout_constraintBottom_toBottomOf="@+id/imgShoesIcon"
-            app:layout_constraintStart_toEndOf="@+id/lblShoes"
-            app:layout_constraintTop_toTopOf="@+id/imgShoesIcon"
-            android:layout_marginStart="15dp"
-            app:srcCompat="@drawable/img_bag" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/lblBag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="zara"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBottomOf="@id/imgBagIcon"
-            app:layout_constraintStart_toEndOf="@+id/imgBagIcon" />
-
-<!--        <Space-->
-<!--            android:id="@+id/space"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="24dp"-->
-<!--            app:layout_constraintEnd_toEndOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toBottomOf="@+id/lbOccasion" />-->
-
-        <!--        <com.google.android.material.button.MaterialButton-->
-        <!--            android:id="@+id/btnDetails"-->
-        <!--            style="@style/Widget.Material3.Button.OutlinedButton"-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_marginEnd="18dp"-->
-        <!--            android:text="details"-->
-        <!--            android:textColor="#000000"-->
-        <!--            app:icon="@drawable/ic_continue"-->
-        <!--            app:iconGravity="end"-->
-        <!--            app:iconSize="22dp"-->
-        <!--            app:iconTint="#000000"-->
-        <!--            app:layout_constraintBottom_toTopOf="@+id/space"-->
-        <!--            app:layout_constraintEnd_toEndOf="parent"-->
-        <!--            app:strokeColor="#BBBBBB" />-->
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLike"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="4dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:padding="0dp"
-            app:icon="@drawable/ic_heart"
             app:iconGravity="textStart"
+            app:icon="@drawable/ic_heart"
             app:iconTint="#000000"
-            app:layout_constraintEnd_toEndOf="@+id/imgMain"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imgMain"/>
 
         <TextView
@@ -234,50 +44,86 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0"
-            android:textSize="12sp"
+            android:textSize="10sp"
             app:layout_constraintEnd_toEndOf="@+id/btnLike"
             app:layout_constraintStart_toStartOf="@id/btnLike"
             app:layout_constraintTop_toBottomOf="@+id/btnLike" />
 
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/lblUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:text="user_name"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imgMain" />
 
-        <!--        <com.google.android.material.card.MaterialCardView-->
-        <!--                    android:layout_width="wrap_content"-->
-        <!--                    android:layout_height="wrap_content"-->
-        <!--                    android:layout_marginTop="11dp"-->
-        <!--                    android:layout_marginEnd="11dp"-->
-        <!--                    app:cardCornerRadius="50dp"-->
-        <!--                    app:layout_constraintEnd_toEndOf="@+id/imgMain"-->
-        <!--                    app:layout_constraintTop_toTopOf="@+id/imgMain"-->
-        <!--                    app:strokeWidth="0dp">-->
-        <!--        -->
-        <!--                    <androidx.appcompat.widget.LinearLayoutCompat-->
-        <!--                        android:layout_width="wrap_content"-->
-        <!--                        android:layout_height="wrap_content"-->
-        <!--                        android:orientation="horizontal"-->
-        <!--                        android:paddingHorizontal="12dp"-->
-        <!--                        android:paddingVertical="5dp">-->
-        <!--        -->
-        <!--                        <androidx.appcompat.widget.AppCompatImageView-->
-        <!--                            android:id="@+id/imgRatingIcon"-->
-        <!--                            android:layout_width="18dp"-->
-        <!--                            android:layout_height="18dp"-->
-        <!--                            android:tint="#ffc701"-->
-        <!--                            app:srcCompat="@drawable/ic_star" />-->
-        <!--        -->
-        <!--                        <com.google.android.material.textview.MaterialTextView-->
-        <!--                            android:id="@+id/lblRating"-->
-        <!--                            android:layout_width="wrap_content"-->
-        <!--                            android:layout_height="wrap_content"-->
-        <!--                            android:layout_marginStart="8dp"-->
-        <!--                            android:text="0.0"-->
-        <!--                            android:textStyle="bold" />-->
-        <!--        -->
-        <!--        -->
-        <!--                    </androidx.appcompat.widget.LinearLayoutCompat>-->
-        <!--        -->
-        <!--        -->
-        <!--                </com.google.android.material.card.MaterialCardView>-->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/lblDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="14dp"
+            android:text="Outfit Description"
+            android:textColor="@android:color/black"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@+id/btnLike"
+            app:layout_constraintStart_toStartOf="@+id/lblUser"
+            app:layout_constraintTop_toBottomOf="@+id/lblUser" />
+
+        <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/flowBrands"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="12dp"
+            app:constraint_referenced_ids="layoutTop,layoutBottom,layoutDress,layoutJacket,layoutShoes,layoutBag,layoutTarget"
+            app:flow_horizontalBias="0.0"
+            app:flow_horizontalGap="12dp"
+            app:flow_horizontalStyle="packed"
+            app:flow_verticalGap="8dp"
+            app:flow_wrapMode="chain"
+            app:layout_constraintEnd_toStartOf="@+id/btnLike"
+            app:layout_constraintStart_toStartOf="@+id/lblUser"
+            app:layout_constraintTop_toBottomOf="@+id/lblDescription" />
+
+        <LinearLayout android:id="@+id/layoutTop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgTopIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_shirt" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblTop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="zara" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutBottom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgBottomIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_pants" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblBottom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="castro" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutDress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgDressIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_dress" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblDress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="zara" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutJacket" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgJacketIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_jacket" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblJacket" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="zara" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutShoes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgShoesIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_shoes" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblShoes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="castro" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutBag" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgBagIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_bag" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblBag" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="work" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutTarget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgTargetIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_target" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lbTarget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="work" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </com.google.android.material.card.MaterialCardView>

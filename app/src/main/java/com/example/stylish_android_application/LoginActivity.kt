@@ -60,10 +60,10 @@ class LoginActivity : AppCompatActivity() {
         view.setScaleX(0.0f)
         view.setScaleY(0.0f)
         view.animate()
-            .scaleY(1.75f)
-            .scaleX(1.75f)
+            .scaleY(1.25f)
+            .scaleX(1.25f)
             .translationY(0f)
-            .setDuration(1000)
+            .setDuration(600)
             .setInterpolator(AccelerateDecelerateInterpolator())
             .setListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animator: Animator) {

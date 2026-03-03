@@ -32,16 +32,34 @@ class PostsAdapter(
         val post = posts[position]
 
         // --- שינוי 3: מעכשיו ניגשים לכל השדות דרך holder.binding ---
+//        holder.binding.lblUser.text = post.userName
+//        holder.binding.lblDescription.text = post.description
+//        holder.binding.lbTarget.text = post.occasion
+//        holder.binding.lblLikeCount.text = post.likedBy.size.toString()
+//        setupBrandView(post.brandTop, holder.binding.imgTopIcon, holder.binding.lblTop)
+//        setupBrandView(post.brandBottom, holder.binding.imgBottomIcon, holder.binding.lblBottom)
+//        setupBrandView(post.brandJacket, holder.binding.imgJacketIcon, holder.binding.lblJacket)
+//        setupBrandView(post.brandShoes, holder.binding.imgShoesIcon, holder.binding.lblShoes)
+//        setupBrandView(post.brandBag, holder.binding.imgBagIcon, holder.binding.lblBag)
+//        setupBrandView(post.brandDress, holder.binding.imgDressIcon, holder.binding.lblDress)
+
         holder.binding.lblUser.text = post.userName
-        holder.binding.lblDescription.text = post.description
-        holder.binding.lbTarget.text = post.occasion
         holder.binding.lblLikeCount.text = post.likedBy.size.toString()
-        setupBrandView(post.brandTop, holder.binding.imgTopIcon, holder.binding.lblTop)
-        setupBrandView(post.brandBottom, holder.binding.imgBottomIcon, holder.binding.lblBottom)
-        setupBrandView(post.brandJacket, holder.binding.imgJacketIcon, holder.binding.lblJacket)
-        setupBrandView(post.brandShoes, holder.binding.imgShoesIcon, holder.binding.lblShoes)
-        setupBrandView(post.brandBag, holder.binding.imgBagIcon, holder.binding.lblBag)
-        setupBrandView(post.brandDress, holder.binding.imgDressIcon, holder.binding.lblDress)
+
+        if (post.description.isEmpty()) {
+            holder.binding.lblDescription.visibility = View.GONE
+        } else {
+            holder.binding.lblDescription.visibility = View.VISIBLE
+            holder.binding.lblDescription.text = post.description
+        }
+
+        setupBrandView(post.brandTop, holder.binding.layoutTop, holder.binding.lblTop)
+        setupBrandView(post.brandBottom, holder.binding.layoutBottom, holder.binding.lblBottom)
+        setupBrandView(post.brandDress, holder.binding.layoutDress, holder.binding.lblDress)
+        setupBrandView(post.brandJacket, holder.binding.layoutJacket, holder.binding.lblJacket)
+        setupBrandView(post.brandShoes, holder.binding.layoutShoes, holder.binding.lblShoes)
+        setupBrandView(post.brandBag, holder.binding.layoutBag, holder.binding.lblBag)
+        setupBrandView(post.occasion, holder.binding.layoutTarget, holder.binding.lbTarget)
 
         // --- תמונה ---
         if (post.imageUrl.isNotEmpty()) {
@@ -82,13 +100,11 @@ class PostsAdapter(
         notifyDataSetChanged()
     }
 
-    private fun setupBrandView(brandName: String, iconView: View, textView: android.widget.TextView) {
+    private fun setupBrandView(brandName: String, container: View, textView: android.widget.TextView) {
         if (brandName.isEmpty()) {
-            iconView.visibility = View.GONE
-            textView.visibility = View.GONE
+            container.visibility = View.GONE
         } else {
-            iconView.visibility = View.VISIBLE
-            textView.visibility = View.VISIBLE
+            container.visibility = View.VISIBLE
             textView.text = brandName
         }
     }

@@ -15,7 +15,7 @@
         android:title="Post" />
     <item
         android:id="@+id/nav_likes"
-        android:icon="@drawable/like"
+        android:icon="@drawable/img_heart"
         android:title="Likes" />
     <item
         android:id="@+id/nav_profile"

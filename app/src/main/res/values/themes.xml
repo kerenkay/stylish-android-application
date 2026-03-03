@@ -11,4 +11,15 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
+    <style name="SmallFloatingHint" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">10sp</item> </style>
+
+    <style name="SmallExpandedHint" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">14sp</item> </style>
+
+    <style name="AppBottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="android:minHeight">56dp</item>
+        <item name="itemIconSize">24dp</item>
+    </style>
+
 </resources>

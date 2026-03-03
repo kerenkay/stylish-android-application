@@ -11,9 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import android.widget.ImageView
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -21,9 +19,14 @@ import com.example.stylish_android_application.databinding.FragmentAddPostBindin
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import android.media.ExifInterface
 import android.graphics.Matrix
+import androidx.lifecycle.lifecycleScope
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.content
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AddPostFragment : Fragment() {
 
@@ -32,7 +35,7 @@ class AddPostFragment : Fragment() {
     private var selectedImageUri: Uri? = null
 
     // רשימת האפשרויות
-    private val occasions = arrayOf("daily", "work", "date", "wedding", "event", "other")
+    private val occasions = arrayOf("daily", "work", "night out", "date", "wedding", "event", "other")
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -110,7 +113,8 @@ class AddPostFragment : Fragment() {
         try {
             val bitmap = uriToBitmap(selectedImageUri!!)
             val imageBase64 = bitmapToBase64(bitmap)
-            saveToFirestore(imageBase64)
+            analyzeOutfitWithAI(bitmap, imageBase64)
+//            saveToFirestore(imageBase64)
         } catch (e: Exception) {
             Log.e("Upload", "Error converting image", e)
             Toast.makeText(context, "Error processing image", Toast.LENGTH_SHORT).show()
@@ -118,7 +122,60 @@ class AddPostFragment : Fragment() {
         }
     }
 
-    private fun saveToFirestore(imageBase64: String) {
+    private fun analyzeOutfitWithAI(bitmap: Bitmap, imageBase64: String) {
+        // אתחול המודל של Gemini (נשים את מפתח ה-API פה זמנית)
+        //val smallBitmap = Bitmap.createScaledBitmap(bitmap, 500, 500, true)
+        val generativeModel = GenerativeModel(
+            modelName = "gemini-2.5-flash",
+            // שימי פה את מפתח ה-API שניצור בשלב הבא!
+            apiKey = BuildConfig.GEMINI_API_KEY
+        )
+
+        val prompt = """
+            Look at the clothing in this image. Classify the outfit into exactly one of these three weather categories: 
+            - 'Hot' (for summer/hot weather, shorts, t-shirts, light dresses)
+            - 'Warm' (for spring/autumn/mild weather, long sleeves, light jackets)
+            - 'Cold' (for winter/freezing weather, heavy coats, sweaters, scarves)
+            Reply with ONLY ONE WORD from the categories above (Hot, Warm, or Cold).
+        """.trimIndent()
+
+        // מריצים את בקשת ה-AI ברקע (כדי שהאפליקציה לא תקרוס)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = generativeModel.generateContent(content {
+                    image(bitmap)
+                    text(prompt)
+                })
+
+                // לוקחים את התשובה והופכים אותה לאותיות קטנות כדי למנוע בעיות
+                val rawAnswer = response.text?.lowercase() ?: ""
+                Log.d("Gemini_Test", "AI Answered: $rawAnswer") // ידפיס לנו ב-Logcat מה ה-AI באמת אמר!
+
+                // חיפוש חכם: בודקים אם המילה מופיעה בתוך התשובה, ולא דורשים התאמה מושלמת
+                var aiCategory = "Warm" // ברירת המחדל
+                if (rawAnswer.contains("hot")) {
+                    aiCategory = "Hot"
+                } else if (rawAnswer.contains("cold")) {
+                    aiCategory = "Cold"
+                }
+
+                // חוזרים למסך הראשי (Main Thread) כדי לשמור את הפוסט
+                withContext(Dispatchers.Main) {
+                    saveToFirestore(imageBase64, aiCategory)
+                }
+
+            } catch (e: Exception) {
+                // אם יש שגיאה (כמו חוסר באינטרנט או בעיה במפתח) נראה אותה כאן!
+                Log.e("Gemini_Error", "API Failed: ${e.message}")
+
+                withContext(Dispatchers.Main) {
+                    saveToFirestore(imageBase64, "Warm") // במקרה של שגיאה אמיתית, נשמור כ-Warm
+                }
+            }
+        }
+    }
+
+    private fun saveToFirestore(imageBase64: String, aiCategory: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
             Toast.makeText(context, "You are not logged in!", Toast.LENGTH_SHORT).show()
@@ -145,6 +202,7 @@ class AddPostFragment : Fragment() {
             brandShoes = binding.etShoes.text.toString().trim(),
             brandBag = binding.etBag.text.toString().trim(),
             brandDress = binding.etDress.text.toString().trim(),
+            weatherCategory = aiCategory,
             timestamp = System.currentTimeMillis()
         )
 
@@ -152,7 +210,7 @@ class AddPostFragment : Fragment() {
             .add(post)
             .addOnSuccessListener {
                 Toast.makeText(context, "Post shared successfully!", Toast.LENGTH_LONG).show()
-
+                Toast.makeText(context, "Post shared! AI classified as: $aiCategory", Toast.LENGTH_LONG).show()
                 // 1. קודם כל משחררים את הכפתור ומנקים את הטופס (כדי שלא ייתקע)
                 resetButton()
 
@@ -165,8 +223,11 @@ class AddPostFragment : Fragment() {
                     // (נניח שה-ID של ה-BottomNav הוא bottomNavigationView ושל הבית הוא homeFragment)
                     // אם השמות אצלך שונים, תצטרכי להתאים את השורה הזו או למחוק אותה
                     try {
-                        val bottomNav = requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_navigation)
-                        bottomNav?.selectedItemId = R.id.nav_home // ודאי שזה ה-ID של טאב הבית אצלך
+//                        val bottomNav = requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_navigation)
+//                        bottomNav?.selectedItemId = R.id.nav_home // ודאי שזה ה-ID של טאב הבית אצלך
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, FeedFragment())
+                            .commit()
                     } catch (e: Exception) {
                         // אם לא הצלחנו לנווט, לפחות הטופס נקי והכפתור משוחרר
                     }

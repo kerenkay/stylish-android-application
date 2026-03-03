@@ -43,17 +43,36 @@ class PostDetailsFragment : Fragment() {
 
     private fun setupUI(post: Post) {
         // גישה לשדות בתוך ה-Include דרך fullPostCard
-        binding.fullPostCard.lblUser.text = post.userName
-        binding.fullPostCard.lblDescription.text = post.description
+//        binding.fullPostCard.lblUser.text = post.userName
+//        binding.fullPostCard.lblDescription.text = post.description
+//        val card = binding.fullPostCard
+//        setupBrandDetailView(post.brandTop, card.imgTopIcon, card.lblTop)
+//        setupBrandDetailView(post.brandBottom, card.imgBottomIcon, card.lblBottom)
+//        setupBrandDetailView(post.brandJacket, card.imgJacketIcon, card.lblJacket)
+//        setupBrandDetailView(post.brandShoes, card.imgShoesIcon, card.lblShoes)
+//        setupBrandDetailView(post.brandBag, card.imgBagIcon, card.lblBag)
+//        setupBrandDetailView(post.brandDress, card.imgDressIcon, card.lblDress)
+//        binding.fullPostCard.lbTarget.text = post.occasion
+//        binding.fullPostCard.lblLikeCount.text = "${post.likedBy.size}"
+
         val card = binding.fullPostCard
-        setupBrandDetailView(post.brandTop, card.imgTopIcon, card.lblTop)
-        setupBrandDetailView(post.brandBottom, card.imgBottomIcon, card.lblBottom)
-        setupBrandDetailView(post.brandJacket, card.imgJacketIcon, card.lblJacket)
-        setupBrandDetailView(post.brandShoes, card.imgShoesIcon, card.lblShoes)
-        setupBrandDetailView(post.brandBag, card.imgBagIcon, card.lblBag)
-        setupBrandDetailView(post.brandDress, card.imgDressIcon, card.lblDress)
-        binding.fullPostCard.lbTarget.text = post.occasion
-        binding.fullPostCard.lblLikeCount.text = "${post.likedBy.size}"
+        card.lblUser.text = post.userName
+        card.lblLikeCount.text = post.likedBy.size.toString()
+
+        if (post.description.isEmpty()) {
+            card.lblDescription.visibility = View.GONE
+        } else {
+            card.lblDescription.visibility = View.VISIBLE
+            card.lblDescription.text = post.description
+        }
+
+        setupBrandDetailView(post.brandTop, card.layoutTop, card.lblTop)
+        setupBrandDetailView(post.brandBottom, card.layoutBottom, card.lblBottom)
+        setupBrandDetailView(post.brandDress, card.layoutDress, card.lblDress)
+        setupBrandDetailView(post.brandJacket, card.layoutJacket, card.lblJacket)
+        setupBrandDetailView(post.brandShoes, card.layoutShoes, card.lblShoes)
+        setupBrandDetailView(post.brandBag, card.layoutBag, card.lblBag)
+        setupBrandDetailView(post.occasion, card.layoutTarget, card.lbTarget)
 
         if (post.imageUrl.isNotEmpty()) {
             try {
@@ -150,13 +169,11 @@ class PostDetailsFragment : Fragment() {
         _binding = null
     }
 
-    private fun setupBrandDetailView(brandName: String, iconView: View, textView: android.widget.TextView) {
+    private fun setupBrandDetailView(brandName: String, container: View, textView: android.widget.TextView) {
         if (brandName.isEmpty()) {
-            iconView.visibility = View.GONE
-            textView.visibility = View.GONE
+            container.visibility = View.GONE
         } else {
-            iconView.visibility = View.VISIBLE
-            textView.visibility = View.VISIBLE
+            container.visibility = View.VISIBLE
             textView.text = brandName
         }
     }
