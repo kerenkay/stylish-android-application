@@ -6,14 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-// חשוב: נוודא שה-Binding מיובא
 import com.example.stylish_android_application.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
 
 class PostsAdapter(
     private var posts: List<Post>,
     private val onLikeClicked: (Post) -> Unit,
-    private val onPostClicked: (Post) -> Unit
+    private val onPostClicked: (Post) -> Unit,
+    private val onUserClicked: (String) -> Unit
 ) : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
 
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -91,6 +91,16 @@ class PostsAdapter(
         holder.itemView.setOnClickListener {
             onPostClicked(post)
         }
+
+        holder.binding.lblUser.setOnClickListener {
+            // קוראים לפונקציה שמעבירה את ה-ID החוצה
+            onUserClicked(post.userId)
+        }
+
+//        // (מומלץ להוסיף את אותה לחיצה גם על תמונת הפרופיל שלו בפוסט)
+//        holder.binding.imgProfileSmall.setOnClickListener {
+//            onUserClicked(post.userId)
+//        }
     }
 
     override fun getItemCount() = posts.size

@@ -39,21 +39,26 @@ class PostDetailsFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+
+        val onUserClicked = View.OnClickListener {
+            val profileFragment = ProfileFragment()
+            val bundle = Bundle()
+            bundle.putString("USER_ID", post?.userId)
+            profileFragment.arguments = bundle
+
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, profileFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
+        // 2. מחברים את הלחיצה לרכיבים!
+        // שימי לב שאנחנו ניגשים אליהם דרך 'fullPostCard'
+//        binding.fullPostCard.imgProfile.setOnClickListener(onUserClicked)
+        binding.fullPostCard.lblUser.setOnClickListener(onUserClicked)
     }
 
     private fun setupUI(post: Post) {
-        // גישה לשדות בתוך ה-Include דרך fullPostCard
-//        binding.fullPostCard.lblUser.text = post.userName
-//        binding.fullPostCard.lblDescription.text = post.description
-//        val card = binding.fullPostCard
-//        setupBrandDetailView(post.brandTop, card.imgTopIcon, card.lblTop)
-//        setupBrandDetailView(post.brandBottom, card.imgBottomIcon, card.lblBottom)
-//        setupBrandDetailView(post.brandJacket, card.imgJacketIcon, card.lblJacket)
-//        setupBrandDetailView(post.brandShoes, card.imgShoesIcon, card.lblShoes)
-//        setupBrandDetailView(post.brandBag, card.imgBagIcon, card.lblBag)
-//        setupBrandDetailView(post.brandDress, card.imgDressIcon, card.lblDress)
-//        binding.fullPostCard.lbTarget.text = post.occasion
-//        binding.fullPostCard.lblLikeCount.text = "${post.likedBy.size}"
 
         val card = binding.fullPostCard
         card.lblUser.text = post.userName

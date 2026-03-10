@@ -11,7 +11,7 @@ import com.example.stylish_android_application.databinding.ItemProfileBinding
 class ProfileAdapter(
     private val posts: List<Post>,
     private val onPostClick: (Post) -> Unit,
-    private val onPostLongClick: (Post) -> Unit
+//    private val onPostLongClick: (Post) -> Unit
 ) : RecyclerView.Adapter<ProfileAdapter.ProfileViewHolder>() {
 
     // --- ה-ViewHolder מקבל עכשיו את ה-Binding ---
@@ -42,10 +42,10 @@ class ProfileAdapter(
 
         // --- לחיצות ---
         holder.binding.root.setOnClickListener { onPostClick(post) }
-        holder.binding.root.setOnLongClickListener {
-            onPostLongClick(post)
-            true
-        }
+//        holder.binding.root.setOnLongClickListener {
+//            onPostLongClick(post)
+//            true
+//        }
     }
 
     override fun getItemCount() = posts.size

@@ -62,8 +62,7 @@ class SearchFragment : Fragment() {
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit()
-            },
-            onPostLongClick = {}
+            }
         )
         binding.rvSearchResults.adapter = adapter
     }

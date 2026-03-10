@@ -22,4 +22,23 @@
         <item name="itemIconSize">24dp</item>
     </style>
 
+    <style name="OutfitInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="expandedHintEnabled">false</item>
+        <item name="boxCornerRadiusBottomEnd">15dp</item>
+        <item name="boxCornerRadiusBottomStart">15dp</item>
+        <item name="boxCornerRadiusTopEnd">15dp</item>
+        <item name="boxCornerRadiusTopStart">15dp</item>
+    </style>
+
+    <style name="OutfitAutoCompleteText" parent="Widget.AppCompat.AutoCompleteTextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">15dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:inputType">text</item>
+        <item name="android:hint">type brand...</item></style>
+
 </resources>

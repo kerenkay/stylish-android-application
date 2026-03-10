@@ -47,6 +47,18 @@ class FeedFragment : Fragment() {
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit()
+            },
+            onUserClicked = { userId ->
+                val profileFragment = ProfileFragment()
+                val bundle = Bundle()
+                // אורזים את ה-ID של המשתמש שלחצו עליו
+                bundle.putString("USER_ID", userId)
+                profileFragment.arguments = bundle
+
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, profileFragment)
+                    .addToBackStack(null) // מאפשר לחזור לפיד עם כפתור החזור
+                    .commit()
             }
         )
         binding.rvPosts.layoutManager = LinearLayoutManager(context)

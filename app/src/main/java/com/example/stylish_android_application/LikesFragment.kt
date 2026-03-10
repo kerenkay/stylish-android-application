@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.marginStart
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.stylish_android_application.databinding.FragmentLikesBinding
@@ -21,6 +23,7 @@ class LikesFragment : Fragment() {
     private val allLikedPosts = mutableListOf<Post>()
     private val allFolders = mutableListOf<FolderItem>()
     private val currentFolderPosts = mutableListOf<Post>()
+    private var snapshotListener: com.google.firebase.firestore.ListenerRegistration? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentLikesBinding.inflate(inflater, container, false)
@@ -55,8 +58,8 @@ class LikesFragment : Fragment() {
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit()
-            },
-            onPostLongClick = {}
+            }
+//            onPostLongClick = {}
         )
         binding.rvLikedPosts.adapter = postsAdapter
     }
@@ -71,9 +74,14 @@ class LikesFragment : Fragment() {
     private fun loadLikedPosts() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        FirebaseFirestore.getInstance().collection("posts")
+        // 1. שומרים את ההאזנה לתוך המשתנה
+        snapshotListener = FirebaseFirestore.getInstance().collection("posts")
             .whereArrayContains("likedBy", currentUserId)
             .addSnapshotListener { snapshot, error ->
+
+                // 2. שורת ההגנה! אם המסך סגור, אל תעשה כלום ותעצור פה.
+                if (_binding == null) return@addSnapshotListener
+
                 if (snapshot != null) {
                     allLikedPosts.clear()
                     for (document in snapshot.documents) {
@@ -128,11 +136,17 @@ class LikesFragment : Fragment() {
         // מראים כפתור חזור ומשנים כותרת
         binding.btnBack.visibility = View.VISIBLE
         binding.tvLikesTitle.text = folder.name
-
+        binding.tvLikesTitle.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            marginStart = 4.dpToPx(requireContext())
+        }
         // מעדכנים את הרשימה להציג רק את הפוסטים של התיקייה הזו
         currentFolderPosts.clear()
         currentFolderPosts.addAll(folder.posts)
         postsAdapter.notifyDataSetChanged()
+    }
+
+    fun Int.dpToPx(context: android.content.Context): Int {
+        return (this * context.resources.displayMetrics.density).toInt()
     }
 
     private fun closeFolder() {
@@ -143,10 +157,14 @@ class LikesFragment : Fragment() {
         // מסתירים כפתור חזור ומחזירים כותרת מקורית
         binding.btnBack.visibility = View.GONE
         binding.tvLikesTitle.text = "Saved Looks"
+        binding.tvLikesTitle.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            marginStart = 16.dpToPx(requireContext())
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        snapshotListener?.remove()
         _binding = null
     }
 }

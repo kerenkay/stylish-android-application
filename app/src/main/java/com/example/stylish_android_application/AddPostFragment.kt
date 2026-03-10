@@ -41,11 +41,23 @@ class AddPostFragment : Fragment() {
         if (uri != null) {
             selectedImageUri = uri
             binding.imgPostPreview.setImageURI(uri)
+//            binding.imgPostPreview.visibility = View.VISIBLE
+//            binding.imgPostPreview.scaleType = ImageView.ScaleType.CENTER_CROP
+//            binding.imgPostPreview.imageTintList = null
+
             binding.imgPostPreview.visibility = View.VISIBLE
+            binding.iconAdd.visibility = View.GONE
+            binding.tvHint.visibility = View.GONE
             binding.imgPostPreview.scaleType = ImageView.ScaleType.CENTER_CROP
-            binding.imgPostPreview.imageTintList = null
         }
     }
+
+    private val brandSuggestions = arrayOf(
+        "Zara", "H&M", "Nike", "Adidas", "Pull & Bear", "Bershka", "Stradivarius",
+        "Mango", "Massimo Dutti", "Levi's", "Diesel", "Castro", "Renuar", "Twentyfourseven",
+        "Urban Outfitters", "ASOS", "Shein", "Gucci", "Prada", "Chanel", "Jordan",
+        "New Balance", "Vans", "Converse", "Puma", "Terminal X", "Fox"
+    )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentAddPostBinding.inflate(inflater, container, false)
@@ -56,6 +68,7 @@ class AddPostFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupSpinner() // הפעלת ה-Spinner
+        setupBrandAutocomplete()
 
         binding.addPost.setOnClickListener { pickImageLauncher.launch("image/*") }
 
@@ -67,6 +80,19 @@ class AddPostFragment : Fragment() {
     }
 
     // --- הגדרת רשימת הבחירה (Spinner) ---
+
+    private fun setupBrandAutocomplete() {
+        // יוצרים אדפטר שייקח את רשימת המותגים ויעצב אותם כשורות נפתחות
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, brandSuggestions)
+
+        // מחברים את האדפטר לכל אחת מתיבות הטקסט הרלוונטיות
+        binding.etBrandTop.setAdapter(adapter)
+        binding.etBrandBottom.setAdapter(adapter)
+        binding.etJacket.setAdapter(adapter)
+        binding.etShoes.setAdapter(adapter)
+        binding.etBag.setAdapter(adapter)
+        binding.etDress.setAdapter(adapter)
+    }
     private fun setupSpinner() {
         // יצירת מתאם בין הרשימה לרכיב הגרפי
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, occasions)
@@ -79,9 +105,9 @@ class AddPostFragment : Fragment() {
                 val selected = occasions[position]
                 // אם נבחר "other", מציגים את שדה הטקסט החופשי. אחרת - מסתירים.
                 if (selected == "other") {
-                    binding.etOccasionOther.visibility = View.VISIBLE
+                    binding.layoutOccasionOther.visibility = View.VISIBLE
                 } else {
-                    binding.etOccasionOther.visibility = View.GONE
+                    binding.layoutOccasionOther.visibility = View.GONE
                 }
             }
 
@@ -304,207 +330,3 @@ class AddPostFragment : Fragment() {
         _binding = null
     }
 }
-
-
-
-
-
-
-//package com.example.stylish_android_application
-//
-//import android.net.Uri
-//import android.os.Bundle
-//import android.util.Log
-//import android.view.LayoutInflater
-//import android.view.View
-//import android.view.ViewGroup
-//import android.widget.ImageView
-//import android.widget.Toast
-//import androidx.activity.result.contract.ActivityResultContracts
-//import androidx.fragment.app.Fragment
-//import com.example.stylish_android_application.databinding.FragmentAddPostBinding
-//import com.google.firebase.auth.FirebaseAuth
-//import com.google.firebase.firestore.FirebaseFirestore
-//import com.google.firebase.storage.FirebaseStorage
-//import java.util.UUID
-//
-//class AddPostFragment : Fragment() {
-//
-//    private var _binding: FragmentAddPostBinding? = null
-//    // שימוש ב-binding בצורה בטוחה
-//    private val binding get() = _binding!!
-//
-//    // משתנה לשמירת ה-URI של התמונה שנבחרה
-//    private var selectedImageUri: Uri? = null
-//
-//    // --- 1. הגדרת המשגר לבחירת תמונה ---
-//    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-//        if (uri != null) {
-//            onImageSelected(uri)
-//        }
-//    }
-//
-//    override fun onCreateView(
-//        inflater: LayoutInflater, container: ViewGroup?,
-//        savedInstanceState: Bundle?
-//    ): View {
-//        _binding = FragmentAddPostBinding.inflate(inflater, container, false)
-//        return binding.root
-//    }
-//
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//        setupUI()
-//    }
-//
-//    // --- 2. חיבור כל הכפתורים והלחיצות ---
-//    private fun setupUI() {
-//        // לחיצה על התמונה כדי לפתוח גלריה
-//        binding.imgPostPreview.setOnClickListener {
-//            pickImageLauncher.launch("image/*")
-//        }
-//
-//        // לחיצה על כפתור השיתוף
-//        binding.btnPost.setOnClickListener {
-//            validateAndUpload()
-//        }
-//    }
-//
-//    // --- 3. לוגיקה לתצוגת התמונה שנבחרה ---
-//    private fun onImageSelected(uri: Uri) {
-//        selectedImageUri = uri
-//
-//        // הגדרות תצוגה כדי שהתמונה תיראה טוב (ולא אפורה או קטנה)
-//        binding.imgPostPreview.apply {
-//            setImageURI(uri)
-//            scaleType = ImageView.ScaleType.CENTER_CROP // מילוי כל הריבוע
-//            imageTintList = null // ביטול הצבע האפור אם היה
-//        }
-//    }
-//
-//    // --- 4. בדיקת תקינות לפני שליחה ---
-//    private fun validateAndUpload() {
-//        val description = binding.etDescription.text.toString().trim()
-//        val occasion = binding.etOccasion.text.toString().trim()
-//
-//        if (selectedImageUri == null) {
-//            showToast("Please select an image first")
-//            return
-//        }
-//
-//        if (description.isEmpty() || occasion.isEmpty()) {
-//            showToast("Please fill in Description and Occasion")
-//            return
-//        }
-//
-//        // הכל תקין - מתחילים העלאה
-//        setLoadingState(true)
-//        uploadImageToStorage()
-//    }
-//
-//    // --- 5. העלאת התמונה ל-Storage (התיקון הגדול) ---
-//    // הפתרון המקצועי: שימוש ב-Storage עם תיקון לבעיית ה-Sync
-//    private fun uploadImageToStorage() {
-//        // 1. יצירת שם קובץ ייחודי
-//        val fileName = UUID.randomUUID().toString() + ".jpg"
-//        val storageRef = FirebaseStorage.getInstance().reference.child("images/$fileName")
-//
-//        // 2. העלאת הקובץ
-//        val uploadTask = storageRef.putFile(selectedImageUri!!)
-//
-//        // 3. התיקון הקריטי: שימוש ב-continueWithTask
-//        // זה מבטיח שלא נבקש את ה-URL לפני שהקובץ סיים לעלות ב-100%
-//        uploadTask.continueWithTask { task ->
-//            if (!task.isSuccessful) {
-//                task.exception?.let { throw it }
-//            }
-//            // רק עכשיו בטוח לבקש את הלינק!
-//            storageRef.downloadUrl
-//        }.addOnCompleteListener { task ->
-//            if (task.isSuccessful) {
-//                val downloadUri = task.result
-//                // 4. יש לנו לינק תקין - שומרים ב-Firestore
-//                saveDataToFirestore(downloadUri.toString())
-//            } else {
-//                // טיפול בשגיאות אמיתיות (כמו אין אינטרנט וכו')
-//                Toast.makeText(context, "Upload failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-//                binding.btnPost.isEnabled = true
-//                binding.btnPost.text = "Share Outfit"
-//            }
-//        }
-//    }
-//
-//    // --- 6. שמירת הנתונים ב-Firestore ---
-//    private fun saveDataToFirestore(imageUrl: String) {
-//        val currentUser = FirebaseAuth.getInstance().currentUser
-//        if (currentUser == null) {
-//            handleError("User not logged in")
-//            return
-//        }
-//
-//        // הכנת הנתונים לשמירה
-//        val postMap = hashMapOf(
-//            "userId" to currentUser.uid,
-//            "imageUrl" to imageUrl,
-//            "description" to binding.etDescription.text.toString().trim(),
-//            "brandTop" to binding.etBrandTop.text.toString().trim(),
-//            "brandBottom" to binding.etBrandBottom.text.toString().trim(),
-//            "occasion" to binding.etOccasion.text.toString().trim(),
-//            "timestamp" to System.currentTimeMillis()
-//        )
-//
-//        FirebaseFirestore.getInstance().collection("posts")
-//            .add(postMap)
-//            .addOnSuccessListener {
-//                showToast("Post shared successfully!")
-//                resetForm()
-//            }
-//            .addOnFailureListener { e ->
-//                handleError("Error saving post details: ${e.message}")
-//            }
-//    }
-//
-//    // --- פונקציות עזר (Helpers) ---
-//
-//    private fun setLoadingState(isLoading: Boolean) {
-//        binding.btnPost.isEnabled = !isLoading
-//        binding.btnPost.text = if (isLoading) "Uploading..." else "Share Outfit"
-//        // אם יש לך ProgressBar ב-XML, אפשר להציג/להסתיר אותו כאן
-//    }
-//
-//    private fun resetForm() {
-//        setLoadingState(false)
-//        selectedImageUri = null
-//
-//        // איפוס שדות הטקסט
-//        binding.etDescription.text?.clear()
-//        binding.etBrandTop.text?.clear()
-//        binding.etBrandBottom.text?.clear()
-//        binding.etOccasion.text?.clear()
-//
-//        // החזרת תמונת ברירת המחדל
-//        binding.imgPostPreview.apply {
-//            setImageResource(R.drawable.img_add_post) // ודאי שזה השם הנכון של האייקון שלך ב-drawable
-//            scaleType = ImageView.ScaleType.CENTER_INSIDE
-//            // אם במקור היה לך tint לאייקון, אפשר להחזיר אותו כאן, אבל עדיף בלי
-//        }
-//    }
-//
-//    private fun handleError(message: String) {
-//        setLoadingState(false)
-//        Log.e("AddPostFragment", message)
-//        showToast(message)
-//    }
-//
-//    private fun showToast(message: String) {
-//        // שימוש ב-context בצורה בטוחה כדי למנוע קריסות
-//        context?.let {
-//            Toast.makeText(it, message, Toast.LENGTH_SHORT).show()
-//        }
-//    }
-//
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        _binding = null
-//    }
-//}

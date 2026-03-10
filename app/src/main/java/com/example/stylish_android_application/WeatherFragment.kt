@@ -81,7 +81,7 @@ class WeatherFragment : Fragment() {
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit()
-        }, onPostLongClick = {})
+        })
         binding.rvWeatherPosts.adapter = adapter
     }
 
@@ -132,7 +132,7 @@ class WeatherFragment : Fragment() {
 
     // --- הבאת מזג אוויר לפי שם עיר (ברירת מחדל אם סירבו הרשאה) ---
     private fun fetchWeatherAndData(cityName: String) {
-        val apiKey = "f233afe9d2abac01f01041b7a0c8dd2b" // שימי פה את המפתח שלך!
+        val apiKey = BuildConfig.WEATHER_API_KEY // שימי פה את המפתח שלך!
         val url = "https://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey&units=metric"
         executeWeatherApi(url,cityName)
     }
