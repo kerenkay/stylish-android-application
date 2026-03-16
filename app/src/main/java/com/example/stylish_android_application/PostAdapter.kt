@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.stylish_android_application.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -62,14 +63,16 @@ class PostsAdapter(
         setupBrandView(post.occasion, holder.binding.layoutTarget, holder.binding.lbTarget)
 
         // --- תמונה ---
+        // --- תמונה מהירה דרך Glide ---
         if (post.imageUrl.isNotEmpty()) {
-            try {
-                val decodedBytes = Base64.decode(post.imageUrl, Base64.DEFAULT)
-                val decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                holder.binding.imgMain.setImageBitmap(decodedBitmap)
-            } catch (e: Exception) {
-                holder.binding.imgMain.setImageResource(R.drawable.img_outfit)
-            }
+            Glide.with(holder.itemView.context)
+                .load(post.imageUrl)
+                .thumbnail(0.1f) // הטריק: טוען מיד גרסה מטושטשת ב-10% איכות למניעת מסך ריק!
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL) // שומר לזיכרון
+                .placeholder(R.drawable.img_outfit)
+                .into(holder.binding.imgMain)
+        } else {
+            holder.binding.imgMain.setImageResource(R.drawable.img_outfit)
         }
 
         // --- לוגיקה ללייקים ---

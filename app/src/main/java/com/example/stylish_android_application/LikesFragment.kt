@@ -48,6 +48,8 @@ class LikesFragment : Fragment() {
 
         // 2. הגדרת אדפטר הפוסטים (גריד של 3 עמודות, כמו בפרופיל)
         binding.rvLikedPosts.layoutManager = GridLayoutManager(context, 3)
+
+        // כאן תיקנו את השגיאה: מחקנו את ה-onPostLongClick
         postsAdapter = ProfileAdapter(currentFolderPosts,
             onPostClick = { post ->
                 val fragment = PostDetailsFragment()
@@ -59,7 +61,6 @@ class LikesFragment : Fragment() {
                     .addToBackStack(null)
                     .commit()
             }
-//            onPostLongClick = {}
         )
         binding.rvLikedPosts.adapter = postsAdapter
     }

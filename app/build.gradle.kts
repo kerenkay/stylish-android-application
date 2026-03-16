@@ -87,6 +87,7 @@ dependencies {
     implementation("com.google.ai.client.generativeai:generativeai:0.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.github.CanHub:Android-Image-Cropper:4.5.0")
 
     implementation("com.google.android.gms:play-services-location:21.1.0")
 

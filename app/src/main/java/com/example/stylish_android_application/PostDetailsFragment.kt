@@ -13,6 +13,7 @@ import com.example.stylish_android_application.databinding.FragmentPostDetailsBi
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.bumptech.glide.Glide
 
 class PostDetailsFragment : Fragment() {
 
@@ -79,15 +80,16 @@ class PostDetailsFragment : Fragment() {
         setupBrandDetailView(post.brandBag, card.layoutBag, card.lblBag)
         setupBrandDetailView(post.occasion, card.layoutTarget, card.lbTarget)
 
+        // --- טעינת התמונה המהירה דרך Glide ---
         if (post.imageUrl.isNotEmpty()) {
-            try {
-                val decodedBytes = Base64.decode(post.imageUrl, Base64.DEFAULT)
-                // שימוש בפונקציית עזר להקטנת תמונה אם יש צורך, או טעינה ישירה
-                val decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                binding.fullPostCard.imgMain.setImageBitmap(decodedBitmap)
-            } catch (e: Exception) {
-                binding.fullPostCard.imgMain.setImageResource(R.drawable.img_outfit)
-            }
+            Glide.with(requireContext())
+                .load(post.imageUrl)
+                // השורה החדשה: אומרת ל-Glide להשתמש בתמונה שכבר קיימת בזיכרון!
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                .placeholder(R.drawable.img_outfit)
+                .into(card.imgMain)
+        } else {
+            card.imgMain.setImageResource(R.drawable.img_outfit)
         }
     }
 

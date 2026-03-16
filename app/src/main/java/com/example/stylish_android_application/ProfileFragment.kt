@@ -81,37 +81,48 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupUserProfile(targetUserId: String, isCurrentUser: Boolean) {
-        // שימוש ב-SnapshotListener כדי לקבל את הנתונים מיידית מהזיכרון המקומי (Cache)
+        // 1. קודם כל ולפני הכל - אם זה הפרופיל שלי, נציג את השם מיד! (לא תלוי במסד הנתונים)
+        if (isCurrentUser) {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val name = currentUser?.displayName ?: currentUser?.email?.substringBefore("@") ?: "User"
+            binding.tvUserName.text = name
+        }
+
+        // 2. מאזינים למסמך המשתמש כדי להביא את התמונה
         FirebaseFirestore.getInstance().collection("users").document(targetUserId)
             .addSnapshotListener { document, error ->
-                // חשוב לוודא שהמסך עדיין קיים כדי לא לקרוס
                 if (_binding == null) return@addSnapshotListener
 
                 if (document != null && document.exists()) {
-
-                    // 1. טיפול בשם המשתמש
-                    if (isCurrentUser) {
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        val name = currentUser?.displayName ?: currentUser?.email?.substringBefore("@") ?: "User"
-                        binding.tvUserName.text = name
-                    } else {
-                        val name = document.getString("username") ?: "User"
-                        binding.tvUserName.text = name
+                    // אם זה משתמש אחר, ננסה לשלוף את השם מהמסמך שלו (אם שמרת שדה בשם username)
+                    if (!isCurrentUser) {
+                        val name = document.getString("username")
+                        if (!name.isNullOrEmpty()) {
+                            binding.tvUserName.text = name
+                        }
                     }
 
-                    // 2. טיפול מיידי בתמונת הפרופיל
+                    // טעינת תמונת הפרופיל
+                    // טעינת תמונת הפרופיל
                     val imageUrl = document.getString("profileImageUrl")
                     if (!imageUrl.isNullOrEmpty()) {
-                        // Glide עכשיו מקבל את הלינק מיד
                         Glide.with(this@ProfileFragment)
                             .load(imageUrl)
-                            .placeholder(R.drawable.ic_launcher_background) // תמונת המתנה עד שהתמונה האמיתית נטענת
+                            .placeholder(R.drawable.ic_launcher_background)
                             .circleCrop()
                             .into(binding.imgProfile)
+
+                        // --- התוספת החדשה: לחיצה פותחת את התמונה בגדול! ---
+                        binding.imgProfile.setOnClickListener {
+                            showFullImageDialog(imageUrl)
+                        }
                     } else {
-                        // אם אין למשתמש תמונה בכלל
                         binding.imgProfile.setImageResource(R.drawable.ic_launcher_background)
+                        binding.imgProfile.setOnClickListener(null) // אם אין תמונה, אין מה להגדיל
                     }
+                } else {
+                    // אם למשתמש אין מסמך (למשל עוד לא העלה תמונה מעולם)
+                    binding.imgProfile.setImageResource(R.drawable.img_profile)
                 }
             }
     }
@@ -138,57 +149,6 @@ class ProfileFragment : Fragment() {
                 }
             }
     }
-
-    // טעינת התמונה מ-Firestore
-//    private fun loadProfileImage(userId: String) {
-//        // 1. מיד שמים תמונת ברירת מחדל (אייקון של פרופיל) כדי שהמסך לא יהיה ריק בזמן ההמתנה
-//        // החליפי את R.drawable.ic_profile באייקון הדיפולטיבי שיש לך באפליקציה
-//        binding.imgProfile.setImageResource(R.drawable.ic_launcher_background)
-//
-//        FirebaseFirestore.getInstance().collection("users").document(userId)
-//            .get()
-//            .addOnSuccessListener { document ->
-//                if (document != null && document.exists()) {
-//                    val base64Image = document.getString("profileImageUrl")
-//                    if (!base64Image.isNullOrEmpty()) {
-//                        val decodedBytes = Base64.decode(base64Image, Base64.DEFAULT)
-//
-//                        // 2. שימוש ב-Glide כדי לטעון את הבתים (Bytes) בצורה מהירה ולחתוך לעיגול
-//                        Glide.with(requireContext())
-//                            .asBitmap()
-//                            .load(decodedBytes)
-//                            .circleCrop() // חותך את התמונה לעיגול
-//                            .into(binding.imgProfile)
-//                    }
-//                }
-//            }
-//    }
-
-    // העלאת תמונת פרופיל ושמירה
-//    private fun uploadProfileImage(uri: android.net.Uri) {
-//        try {
-//            // שימוש בפונקציה החדשה שמסובבת ומקטינה את התמונה!
-//            val finalBitmap = getRotatedProfileBitmap(uri) ?: return
-//
-//            val baos = java.io.ByteArrayOutputStream()
-//            finalBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, baos)
-//            val base64Image = android.util.Base64.encodeToString(baos.toByteArray(), android.util.Base64.DEFAULT)
-//
-//            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-//
-//            // שמירה ב-Firestore
-//            val userData = hashMapOf("profileImageUrl" to base64Image)
-//            FirebaseFirestore.getInstance().collection("users").document(uid)
-//                .set(userData)
-//                .addOnSuccessListener {
-//                    // עדכון העיגול בתצוגה לתמונה הישרה
-//                    binding.imgProfile.setImageBitmap(finalBitmap)
-//                    Toast.makeText(context, "Profile updated!", Toast.LENGTH_SHORT).show()
-//                }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//    }
 
     private fun uploadProfileImage(uri: android.net.Uri) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
@@ -265,6 +225,14 @@ class ProfileFragment : Fragment() {
                         // חישוב הלייקים
                         totalLikes += post.likedBy.size
                     }
+
+                    // --- גיבוי חכם לשם המשתמש ---
+                    // אם נכנסנו לפרופיל של מישהו אחר ויש לו פוסטים, ניקח את השם המדויק שלו משם!
+                    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                    if (userId != currentUserId && userPosts.isNotEmpty()) {
+                        binding.tvUserName.text = userPosts[0].userName
+                    }
+
                     adapter.notifyDataSetChanged()
 
                     // עדכון התצוגה
@@ -274,11 +242,40 @@ class ProfileFragment : Fragment() {
             }
     }
 
+    private fun showFullImageDialog(imageUrl: String) {
+        // 1. יצירת דיאלוג (חלון צף) על מסך מלא עם רקע שחור
+        val dialog = android.app.Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+
+        // 2. יצירת רכיב תמונה (ImageView) שיתפוס את כל המסך
+        val imageView = android.widget.ImageView(requireContext())
+        imageView.layoutParams = android.view.ViewGroup.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        // שומר על הפרופורציות של התמונה במרכז
+        imageView.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+
+        // 3. טעינת התמונה החלקה מהזיכרון דרך Glide
+        Glide.with(this)
+            .load(imageUrl)
+            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+            .into(imageView)
+
+        dialog.setContentView(imageView)
+
+        // 4. סגירת התמונה בלחיצה עליה (כדי שיהיה קל לחזור לפרופיל)
+        imageView.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 //    private fun showDeleteDialog(post: Post) {
 //        AlertDialog.Builder(context)
-//            .setTitle("Delete Post")
-//            .setMessage("Are you sure you want to delete this outfit?")
-//            .setPositiveButton("Delete") { _, _ -> deletePost(post) }
+//            .setTitle("Change Profile Image")
+//            .setMessage("Are you sure you want to change this image?")
+//            .setPositiveButton("Change") { _, _ -> deletePost(post) }
 //            .setNegativeButton("Cancel", null)
 //            .show()
 //    }

@@ -30,7 +30,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:shapeAppearanceOverlay="@style/ShapeCircle"
-        app:srcCompat="@drawable/img_user"
+        app:srcCompat="@drawable/img_profile"
         app:strokeColor="#CCCCCC"
         app:strokeWidth="1dp" />
 
