@@ -100,6 +100,11 @@ class PostsAdapter(
         notifyDataSetChanged()
     }
 
+    fun updatePosts(newPosts: List<Post>) {
+        posts = newPosts
+        notifyDataSetChanged()
+    }
+
     private fun setupBrandView(brandName: String, container: View, textView: android.widget.TextView) {
         if (brandName.isEmpty()) {
             container.visibility = View.GONE

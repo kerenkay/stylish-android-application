@@ -4,22 +4,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stylish_android_application.databinding.FragmentFeedBinding
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.example.stylish_android_application.viewmodel.FeedViewModel
 
 class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
 
-    private val postsList = mutableListOf<Post>()
     private lateinit var adapter: PostsAdapter
+
+    // 1. Declare the ViewModel
+    private lateinit var viewModel: FeedViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentFeedBinding.inflate(inflater, container, false)
@@ -28,53 +27,31 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // 2. Initialize the ViewModel
+        viewModel = ViewModelProvider(this)[FeedViewModel::class.java]
+
         setupRecyclerView()
-        loadPosts()
+        setupObservers()
     }
 
     private fun setupRecyclerView() {
-//        // כאן אנחנו מעבירים לאדפטר את הפונקציה המטפלת בלייק
-//        adapter = PostsAdapter(
-//            postsList,
-//            onLikeClicked = { post -> toggleLike(post) },
-//            onPostClicked = { post ->
-//                // אותו קוד מעבר כמו בחיפוש
-//                val fragment = PostDetailsFragment()
-//                val bundle = Bundle()
-//                bundle.putSerializable("post", post)
-//                fragment.arguments = bundle
-//                parentFragmentManager.beginTransaction()
-//                    .replace(R.id.fragment_container, fragment)
-//                    .addToBackStack(null)
-//                    .commit()
-//            },
-//            onUserClicked = { userId ->
-//                val profileFragment = ProfileFragment()
-//                val bundle = Bundle()
-//                // אורזים את ה-ID של המשתמש שלחצו עליו
-//                bundle.putString("USER_ID", userId)
-//                profileFragment.arguments = bundle
-//
-//                parentFragmentManager.beginTransaction()
-//                    .replace(R.id.fragment_container, profileFragment)
-//                    .addToBackStack(null) // מאפשר לחזור לפיד עם כפתור החזור
-//                    .commit()
-//            }
-//        )
-
         adapter = PostsAdapter(
-            postsList,
-            onLikeClicked = { post -> toggleLike(post) },
+            posts = emptyList(), // Start with an empty list, ViewModel will fill it!
+            onLikeClicked = { post ->
+                // Delegate business logic to ViewModel
+                viewModel.toggleLike(post)
+            },
             onUserClicked = { userId ->
+                // Handle UI navigation inside the Fragment
                 val profileFragment = ProfileFragment()
                 val bundle = Bundle()
-                // אורזים את ה-ID של המשתמש שלחצו עליו
                 bundle.putString("USER_ID", userId)
                 profileFragment.arguments = bundle
 
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, profileFragment)
-                    .addToBackStack(null) // מאפשר לחזור לפיד עם כפתור החזור
+                    .addToBackStack(null)
                     .commit()
             }
         )
@@ -82,44 +59,11 @@ class FeedFragment : Fragment() {
         binding.rvPosts.adapter = adapter
     }
 
-    // --- הפונקציה שמבצעת את הלייק מול Firebase ---
-    private fun toggleLike(post: Post) {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-        val db = FirebaseFirestore.getInstance()
-        val postRef = db.collection("posts").document(post.id) // חייב שיהיה לנו ID לפוסט!
-
-        val isLiked = post.likedBy.contains(currentUser.uid)
-
-        if (isLiked) {
-            // אם כבר עשיתי לייק -> תמחק אותי מהרשימה (Unlike)
-            postRef.update("likedBy", FieldValue.arrayRemove(currentUser.uid))
-        } else {
-            // אם לא עשיתי לייק -> תוסיף אותי לרשימה (Like)
-            postRef.update("likedBy", FieldValue.arrayUnion(currentUser.uid))
+    // 3. Listen to data changes from the ViewModel
+    private fun setupObservers() {
+        viewModel.postsList.observe(viewLifecycleOwner) { posts ->
+            adapter.updatePosts(posts) // Update the adapter efficiently
         }
-    }
-
-    private fun loadPosts() {
-        FirebaseFirestore.getInstance().collection("posts")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { value, error ->
-                if (error != null) {
-                    return@addSnapshotListener
-                }
-
-                if (value != null) {
-                    postsList.clear()
-                    for (document in value) {
-                        val post = document.toObject(Post::class.java)
-
-                        // *** חשוב מאוד: שומרים את ה-ID של המסמך בתוך האובייקט ***
-                        post.id = document.id
-
-                        postsList.add(post)
-                    }
-                    adapter.notifyDataSetChanged()
-                }
-            }
     }
 
     override fun onDestroyView() {
