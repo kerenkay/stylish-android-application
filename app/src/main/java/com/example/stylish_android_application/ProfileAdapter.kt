@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.stylish_android_application.databinding.ItemProfileBinding
 
 class ProfileAdapter(
-    private val posts: List<Post>,
+    private var posts: List<Post>,
     private val onPostClick: (Post) -> Unit
 ) : RecyclerView.Adapter<ProfileAdapter.ProfileViewHolder>() {
 
@@ -41,6 +41,11 @@ class ProfileAdapter(
         holder.binding.root.setOnClickListener {
             onPostClick(post)
         }
+    }
+
+    fun updatePosts(newPosts: List<Post>) {
+        posts = newPosts
+        notifyDataSetChanged()
     }
 
     override fun getItemCount() = posts.size
