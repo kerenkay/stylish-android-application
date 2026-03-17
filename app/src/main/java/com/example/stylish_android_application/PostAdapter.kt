@@ -13,7 +13,6 @@ import com.google.firebase.auth.FirebaseAuth
 class PostsAdapter(
     private var posts: List<Post>,
     private val onLikeClicked: (Post) -> Unit,
-    private val onPostClicked: (Post) -> Unit,
     private val onUserClicked: (String) -> Unit
 ) : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
 
@@ -31,18 +30,6 @@ class PostsAdapter(
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
-
-        // --- שינוי 3: מעכשיו ניגשים לכל השדות דרך holder.binding ---
-//        holder.binding.lblUser.text = post.userName
-//        holder.binding.lblDescription.text = post.description
-//        holder.binding.lbTarget.text = post.occasion
-//        holder.binding.lblLikeCount.text = post.likedBy.size.toString()
-//        setupBrandView(post.brandTop, holder.binding.imgTopIcon, holder.binding.lblTop)
-//        setupBrandView(post.brandBottom, holder.binding.imgBottomIcon, holder.binding.lblBottom)
-//        setupBrandView(post.brandJacket, holder.binding.imgJacketIcon, holder.binding.lblJacket)
-//        setupBrandView(post.brandShoes, holder.binding.imgShoesIcon, holder.binding.lblShoes)
-//        setupBrandView(post.brandBag, holder.binding.imgBagIcon, holder.binding.lblBag)
-//        setupBrandView(post.brandDress, holder.binding.imgDressIcon, holder.binding.lblDress)
 
         holder.binding.lblUser.text = post.userName
         holder.binding.lblLikeCount.text = post.likedBy.size.toString()
@@ -91,9 +78,9 @@ class PostsAdapter(
             holder.binding.lblLikeCount.text = post.likedBy.size.toString()
         }
 
-        holder.itemView.setOnClickListener {
-            onPostClicked(post)
-        }
+//        holder.itemView.setOnClickListener {
+//            onPostClicked(post)
+//        }
 
         holder.binding.lblUser.setOnClickListener {
             // קוראים לפונקציה שמעבירה את ה-ID החוצה

@@ -60,23 +60,21 @@ class ProfileFragment : Fragment() {
         if (isCurrentUser) {
             binding.btnLogout.visibility = View.VISIBLE
 
-            // לחיצה על תמונת הפרופיל
-            binding.imgProfile.setOnClickListener {
-                pickProfileImage.launch("image/*")
+            // הגדרת לחיצה ארוכה להחלפת תמונה
+            binding.imgProfile.setOnLongClickListener {
+                showChangeProfileImageDialog()
+                true
             }
 
+            // --- העדכון החדש: לחיצה על התנתקות פותחת קודם את שאלת האישור ---
             binding.btnLogout.setOnClickListener {
-                // מנתקים את המשתמש מ-Firebase
-                FirebaseAuth.getInstance().signOut()
-                // מעבירים אותו חזרה למסך ההתחברות
-                val intent = Intent(requireContext(), LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
+                showLogoutConfirmationDialog()
             }
+
         } else {
-            // אם זה פרופיל של מישהו אחר: מסתירים כפתור התנתקות ומבטלים לחיצה על התמונה
+            // פרופיל של מישהו אחר: מסתירים כפתור התנתקות ומבטלים לחיצה ארוכה
             binding.btnLogout.visibility = View.GONE
-            binding.imgProfile.setOnClickListener(null)
+            binding.imgProfile.setOnLongClickListener(null)
         }
     }
 
@@ -102,7 +100,6 @@ class ProfileFragment : Fragment() {
                         }
                     }
 
-                    // טעינת תמונת הפרופיל
                     // טעינת תמונת הפרופיל
                     val imageUrl = document.getString("profileImageUrl")
                     if (!imageUrl.isNullOrEmpty()) {
@@ -271,24 +268,31 @@ class ProfileFragment : Fragment() {
         dialog.show()
     }
 
-//    private fun showDeleteDialog(post: Post) {
-//        AlertDialog.Builder(context)
-//            .setTitle("Change Profile Image")
-//            .setMessage("Are you sure you want to change this image?")
-//            .setPositiveButton("Change") { _, _ -> deletePost(post) }
-//            .setNegativeButton("Cancel", null)
-//            .show()
-//    }
-//
-//    private fun deletePost(post: Post) {
-//        FirebaseFirestore.getInstance().collection("posts")
-//            .document(post.id)
-//            .delete()
-//            .addOnSuccessListener {
-//                Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
-//                // אין צורך למחוק ידנית, ה-SnapshotListener יעשה את זה לבד
-//            }
-//    }
+    private fun showChangeProfileImageDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Change Profile Picture")
+            .setMessage("Would you like to update your profile picture?")
+            .setPositiveButton("Change") { _, _ ->
+                pickProfileImage.launch("image/*")
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showLogoutConfirmationDialog() {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Log Out")
+            .setMessage("Are you sure you want to log out of STYLISH?")
+            .setPositiveButton("Log Out") { _, _ ->
+                // אם המשתמש אישר - מנתקים אותו ומעבירים למסך ההתחברות
+                FirebaseAuth.getInstance().signOut()
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel", null) // ביטול פשוט סוגר את החלון
+            .show()
+    }
 
     private fun getRotatedProfileBitmap(uri: android.net.Uri): android.graphics.Bitmap? {
         // קריאת התמונה מהזיכרון
@@ -299,7 +303,8 @@ class ProfileFragment : Fragment() {
         if (bitmap == null) return null
 
         // הקטנה משמעותית לפרופיל (300x300)
-        val maxDimension = 300
+        // הקטנה משמעותית לפרופיל - שינינו ל-1080 כדי שייראה טוב במסך מלא!
+        val maxDimension = 1080
         if (bitmap.width > maxDimension || bitmap.height > maxDimension) {
             val ratio = bitmap.width.toDouble() / bitmap.height.toDouble()
             val newWidth = if (ratio > 1) maxDimension else (maxDimension * ratio).toInt()
@@ -312,7 +317,7 @@ class ProfileFragment : Fragment() {
         try {
             val exifInputStream = requireContext().contentResolver.openInputStream(uri)
             if (exifInputStream != null) {
-                val exif = android.media.ExifInterface(exifInputStream)
+                val exif = androidx.exifinterface.media.ExifInterface(exifInputStream)
                 val orientation = exif.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL)
 
                 val matrix = android.graphics.Matrix()

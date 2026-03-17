@@ -33,21 +33,38 @@ class FeedFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        // כאן אנחנו מעבירים לאדפטר את הפונקציה המטפלת בלייק
+//        // כאן אנחנו מעבירים לאדפטר את הפונקציה המטפלת בלייק
+//        adapter = PostsAdapter(
+//            postsList,
+//            onLikeClicked = { post -> toggleLike(post) },
+//            onPostClicked = { post ->
+//                // אותו קוד מעבר כמו בחיפוש
+//                val fragment = PostDetailsFragment()
+//                val bundle = Bundle()
+//                bundle.putSerializable("post", post)
+//                fragment.arguments = bundle
+//                parentFragmentManager.beginTransaction()
+//                    .replace(R.id.fragment_container, fragment)
+//                    .addToBackStack(null)
+//                    .commit()
+//            },
+//            onUserClicked = { userId ->
+//                val profileFragment = ProfileFragment()
+//                val bundle = Bundle()
+//                // אורזים את ה-ID של המשתמש שלחצו עליו
+//                bundle.putString("USER_ID", userId)
+//                profileFragment.arguments = bundle
+//
+//                parentFragmentManager.beginTransaction()
+//                    .replace(R.id.fragment_container, profileFragment)
+//                    .addToBackStack(null) // מאפשר לחזור לפיד עם כפתור החזור
+//                    .commit()
+//            }
+//        )
+
         adapter = PostsAdapter(
             postsList,
             onLikeClicked = { post -> toggleLike(post) },
-            onPostClicked = { post ->
-                // אותו קוד מעבר כמו בחיפוש
-                val fragment = PostDetailsFragment()
-                val bundle = Bundle()
-                bundle.putSerializable("post", post)
-                fragment.arguments = bundle
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit()
-            },
             onUserClicked = { userId ->
                 val profileFragment = ProfileFragment()
                 val bundle = Bundle()
