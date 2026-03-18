@@ -64,15 +64,17 @@ class MainActivity : AppCompatActivity() {
         // --- ניהול כפתור החזור הפיזי של הטלפון ---
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // בודקים איזה מסך מוצג כרגע
-                val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
-
-                if (currentFragment is FeedFragment) {
-                    // אם אנחנו בפיד - לחיצה על חזור סוגרת את האפליקציה
-                    finish()
+                // 1. קודם כל בודקים אם יש מסך פנימי פתוח (כמו פרטי פוסט או מזג אוויר)
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStack() // חוזרים מסך אחד אחורה באלגנטיות
                 } else {
-                    // אם אנחנו בכל מסך אחר - לחיצה על חזור מחזירה לפיד
-                    replaceFragment(FeedFragment())
+                    // 2. אם אין מסכים פנימיים, בודקים באיזה טאב אנחנו
+                    val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+                    if (currentFragment is FeedFragment) {
+                        finish() // יציאה מהאפליקציה
+                    } else {
+                        replaceFragment(FeedFragment()) // חזרה לפיד
+                    }
                 }
             }
         })
