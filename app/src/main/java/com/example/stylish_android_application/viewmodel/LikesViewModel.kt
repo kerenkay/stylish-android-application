@@ -14,6 +14,7 @@ class LikesViewModel : ViewModel() {
     // The single source of truth for the UI - a ready-to-use list of folders!
     private val _folders = MutableLiveData<List<FolderItem>>()
     val folders: LiveData<List<FolderItem>> = _folders
+    var openedFolderName: String? = null
 
     private var snapshotListener: ListenerRegistration? = null
 

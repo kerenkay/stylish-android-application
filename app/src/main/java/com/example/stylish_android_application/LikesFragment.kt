@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.marginStart
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
@@ -13,6 +14,7 @@ import com.example.stylish_android_application.databinding.FragmentLikesBinding
 import com.example.stylish_android_application.viewmodel.LikesViewModel
 
 class LikesFragment : Fragment() {
+
     private var _binding: FragmentLikesBinding? = null
     private val binding get() = _binding!!
 
@@ -33,33 +35,16 @@ class LikesFragment : Fragment() {
         setupAdapters()
         setupBackButton()
         setupObservers()
-
-        // --- יירוט כפתור החזור כדי לסגור תיקיות פתוחות ---
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : androidx.activity.OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                // בודקים האם אזור הפוסטים (התיקייה) פתוח וגלוי
-                if (binding.rvLikedPosts.visibility == View.VISIBLE) {
-                    // סוגרים את התיקייה וחוזרים לתצוגת התיקיות הראשית
-                    closeFolder()
-                } else {
-                    // אם אנחנו במסך הראשי של השמירות, נבטל את היירוט שלנו
-                    // וניתן למערכת לעשות את מה שמוגדר ב-MainActivity (לחזור לפיד)
-                    isEnabled = false
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
-            }
-        })
+        setupBackButtonLogic() // הגדרת יירוט כפתור החזור הפיזי
     }
 
     private fun setupAdapters() {
-        // 1. Folders Adapter (2 columns)
         binding.rvFolders.layoutManager = GridLayoutManager(context, 2)
         foldersAdapter = FoldersAdapter(emptyList()) { selectedFolder ->
-            openFolder(selectedFolder)
+            openFolderUI(selectedFolder)
         }
         binding.rvFolders.adapter = foldersAdapter
 
-        // 2. Posts Adapter inside a folder (3 columns)
         binding.rvLikedPosts.layoutManager = GridLayoutManager(context, 3)
         postsAdapter = ProfileAdapter(emptyList()) { post ->
             val fragment = PostDetailsFragment()
@@ -68,35 +53,70 @@ class LikesFragment : Fragment() {
             fragment.arguments = bundle
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
+                .addToBackStack(null) // מאפשר לחזור בדיוק לפה!
                 .commit()
         }
         binding.rvLikedPosts.adapter = postsAdapter
     }
 
-    // 3. Listen to data changes from the ViewModel
+    // הקסם קורה פה: מאזינים לנתונים ומציירים את המסך בהתאם לזיכרון!
     private fun setupObservers() {
         viewModel.folders.observe(viewLifecycleOwner) { folders ->
             if (folders.isEmpty()) {
                 binding.tvNoLikes.visibility = View.VISIBLE
                 binding.rvFolders.visibility = View.GONE
+                binding.rvLikedPosts.visibility = View.GONE
+                binding.btnBack.visibility = View.GONE
             } else {
                 binding.tvNoLikes.visibility = View.GONE
-                binding.rvFolders.visibility = View.VISIBLE
                 foldersAdapter.updateFolders(folders)
+
+                // בדיקה: האם הייתה תיקייה פתוחה כשיצאנו מהמסך?
+                val openedName = viewModel.openedFolderName
+                if (openedName != null) {
+                    // מחפשים את התיקייה העדכנית לפי השם
+                    val folderToOpen = folders.find { it.name == openedName }
+                    if (folderToOpen != null) {
+                        openFolderUI(folderToOpen) // פותחים אותה שוב!
+                    } else {
+                        // אם התיקייה נמחקה (כי הורדנו לייק לפוסט האחרון שבה) נסגור תצוגה
+                        closeFolderUI()
+                    }
+                } else {
+                    closeFolderUI() // מצב רגיל - מציגים את כל התיקיות
+                }
             }
         }
     }
 
     private fun setupBackButton() {
+        // כפתור החזור שעל המסך (למעלה שמאלה)
         binding.btnBack.setOnClickListener {
-            closeFolder()
+            closeFolderUI()
         }
     }
 
-    // --- UI Navigation (View States) ---
+    private fun setupBackButtonLogic() {
+        // ניהול כפתור החזור *הפיזי* של המכשיר
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.openedFolderName != null) {
+                    // אם אנחנו בתוך תיקייה - נסגור רק אותה
+                    closeFolderUI()
+                } else {
+                    // אם אנחנו במסך התיקיות הראשי - ניתן למערכת לחזור לפיד הראשי
+                    isEnabled = false
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+    }
 
-    private fun openFolder(folder: FolderItem) {
+    // --- שינויי תצוגה (UI) בלבד ---
+
+    private fun openFolderUI(folder: FolderItem) {
+        viewModel.openedFolderName = folder.name // שומרים בזיכרון של ה-ViewModel
+
         binding.rvFolders.visibility = View.GONE
         binding.rvLikedPosts.visibility = View.VISIBLE
 
@@ -106,11 +126,12 @@ class LikesFragment : Fragment() {
             marginStart = 4.dpToPx(requireContext())
         }
 
-        // Update the posts adapter using the function we added earlier!
         postsAdapter.updatePosts(folder.posts)
     }
 
-    private fun closeFolder() {
+    private fun closeFolderUI() {
+        viewModel.openedFolderName = null // מוחקים מהזיכרון
+
         binding.rvLikedPosts.visibility = View.GONE
         binding.rvFolders.visibility = View.VISIBLE
 
