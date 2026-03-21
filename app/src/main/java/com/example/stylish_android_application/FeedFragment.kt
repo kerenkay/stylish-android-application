@@ -55,8 +55,27 @@ class FeedFragment : Fragment() {
                     .commit()
             }
         )
+        val layoutManager = LinearLayoutManager(context)
         binding.rvPosts.layoutManager = LinearLayoutManager(context)
         binding.rvPosts.adapter = adapter
+
+        binding.rvPosts.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                // בודקים אם אנחנו גוללים למטה
+                if (dy > 0) {
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                    // אם התקרבנו לסוף הרשימה (נשארו פחות מ-3 פוסטים לראות)
+                    if (!viewModel.isLastPage && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3) {
+                        viewModel.loadMorePosts()
+                    }
+                }
+            }
+        })
     }
 
     // 3. Listen to data changes from the ViewModel
