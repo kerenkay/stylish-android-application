@@ -24,13 +24,31 @@ class FeedViewModel : ViewModel() {
     private var isFetching = false // מונע קריאות כפולות אם המשתמש גולל מהר
     var isLastPage = false // מסמן אם הגענו לסוף מסד הנתונים
         private set
+    private var followingList = listOf<String>()
+    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     init {
-        loadInitialPosts()
+        loadFollowingListAndPosts()
+    }
+
+    private fun loadFollowingListAndPosts() {
+        if (currentUserId == null) return
+
+        FirebaseFirestore.getInstance().collection("users").document(currentUserId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    followingList = document.get("following") as? List<String> ?: emptyList()
+                }
+                loadInitialPosts()
+            }
+            .addOnFailureListener {
+                loadInitialPosts()
+            }
     }
 
     fun loadInitialPosts() {
-        if (isFetching) return
+        if (isFetching || currentUserId == null) return
         isFetching = true
 
         FirebaseFirestore.getInstance().collection("posts")
@@ -40,24 +58,32 @@ class FeedViewModel : ViewModel() {
             .addOnSuccessListener { snapshot ->
                 if (!snapshot.isEmpty) {
                     currentPosts.clear()
+                    val newPosts = mutableListOf<Post>()
 
                     for (document in snapshot.documents) {
                         val post = document.toObject(Post::class.java)
                         if (post != null) {
-                            post.id = document.id
-                            currentPosts.add(post)
+                            if (post.userId == currentUserId || followingList.contains(post.userId)) {
+                                post.id = document.id
+                                newPosts.add(post)
+                            }
                         }
                     }
 
-                    // שומרים את המסמך האחרון כדי שנדע מאיפה להמשיך בפעם הבאה
                     lastVisibleDocument = snapshot.documents[snapshot.size() - 1]
-
-                    // אם קיבלנו פחות פוסטים ממה שביקשנו, סימן שזה הסוף!
                     if (snapshot.size() < PAGE_SIZE) isLastPage = true
-
-                    _postsList.value = ArrayList(currentPosts)
+                    if (newPosts.isEmpty() && !isLastPage) {
+                        isFetching = false
+                        loadMorePosts()
+                    } else {
+                        currentPosts.addAll(newPosts)
+                        _postsList.value = ArrayList(currentPosts)
+                        isFetching = false
+                    }
+                } else {
+                    isLastPage = true
+                    isFetching = false
                 }
-                isFetching = false
             }
             .addOnFailureListener {
                 isFetching = false
@@ -65,34 +91,45 @@ class FeedViewModel : ViewModel() {
     }
 
     fun loadMorePosts() {
-        // אם אנחנו כבר טוענים, או שהגענו לסוף, או שאין נקודת התחלה - אל תעשה כלום
-        if (isFetching || isLastPage || lastVisibleDocument == null) return
-
+        if (isFetching || isLastPage || lastVisibleDocument == null || currentUserId == null) return
         isFetching = true
 
         FirebaseFirestore.getInstance().collection("posts")
             .orderBy("timestamp", Query.Direction.DESCENDING)
-            .startAfter(lastVisibleDocument!!) // מתחילים בדיוק איפה שעצרנו!
+            .startAfter(lastVisibleDocument!!)
             .limit(PAGE_SIZE)
             .get()
             .addOnSuccessListener { snapshot ->
                 if (!snapshot.isEmpty) {
+                    val newPosts = mutableListOf<Post>()
+
                     for (document in snapshot.documents) {
                         val post = document.toObject(Post::class.java)
                         if (post != null) {
-                            post.id = document.id
-                            currentPosts.add(post)
+                            // הסינון החכם חל גם על טעינת ההמשך בגלילה למטה
+                            if (post.userId == currentUserId || followingList.contains(post.userId)) {
+                                post.id = document.id
+                                newPosts.add(post)
+                            }
                         }
                     }
 
                     lastVisibleDocument = snapshot.documents[snapshot.size() - 1]
                     if (snapshot.size() < PAGE_SIZE) isLastPage = true
 
-                    _postsList.value = ArrayList(currentPosts) // מעדכנים את ה-UI
+                    // דילוג אוטומטי במקרה של מנה ריקה
+                    if (newPosts.isEmpty() && !isLastPage) {
+                        isFetching = false
+                        loadMorePosts()
+                    } else {
+                        currentPosts.addAll(newPosts)
+                        _postsList.value = ArrayList(currentPosts)
+                        isFetching = false
+                    }
                 } else {
-                    isLastPage = true // אם הרשימה ריקה, הגענו לסוף
+                    isLastPage = true
+                    isFetching = false
                 }
-                isFetching = false
             }
             .addOnFailureListener {
                 isFetching = false

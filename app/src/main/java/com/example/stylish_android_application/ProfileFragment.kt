@@ -2,6 +2,7 @@ package com.example.stylish_android_application
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -55,7 +56,7 @@ class ProfileFragment : Fragment() {
         val targetUserId = arguments?.getString("USER_ID") ?: currentUserId ?: return
         val isCurrentUser = (currentUserId == targetUserId)
 
-        setupUI(isCurrentUser)
+        setupUI(targetUserId,isCurrentUser)
         setupRecyclerView()
         setupObservers()
 
@@ -66,9 +67,10 @@ class ProfileFragment : Fragment() {
 
     // --- UI Setup Methods ---
 
-    private fun setupUI(isCurrentUser: Boolean) {
+    private fun setupUI(targetUserId: String,isCurrentUser: Boolean) {
         if (isCurrentUser) {
             binding.btnLogout.visibility = View.VISIBLE
+            binding.btnFollow.visibility = View.GONE
 
             // Long click to change profile picture
             binding.imgProfile.setOnLongClickListener {
@@ -83,7 +85,11 @@ class ProfileFragment : Fragment() {
         } else {
             // Foreign profile: hide logout and disable long click
             binding.btnLogout.visibility = View.GONE
+            binding.btnFollow.visibility = View.VISIBLE
             binding.imgProfile.setOnLongClickListener(null)
+            binding.btnFollow.setOnClickListener {
+                viewModel.toggleFollow(targetUserId)
+            }
         }
     }
 
@@ -133,12 +139,30 @@ class ProfileFragment : Fragment() {
         // Observe User Posts
         viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
             adapter.updatePosts(posts) // Make sure your ProfileAdapter has an 'updatePosts' method!
-            binding.tvPostsCount.text = "${posts.size} Posts"
+            binding.tvPostsCount.text = "${posts.size} \nPosts"
         }
 
         // Observe Total Likes
         viewModel.totalLikes.observe(viewLifecycleOwner) { likes ->
-            binding.tvTotalLikes.text = "$likes Likes"
+            binding.tvTotalLikes.text = "$likes \nLikes"
+        }
+
+        // Observe Followers
+        viewModel.followersCount.observe(viewLifecycleOwner) { count ->
+            binding.tvFollowers.text = "$count \nFollowers"
+        }
+        viewModel.followingCount.observe(viewLifecycleOwner) { count ->
+            binding.tvFollowing.text = "$count \nFollowing"
+        }
+
+        viewModel.isFollowing.observe(viewLifecycleOwner) { isFollowing ->
+            if (isFollowing) {
+                binding.btnFollow.text = "Unfollow"
+                binding.btnFollow.setBackgroundColor(Color.parseColor("#787770"))
+            } else {
+                binding.btnFollow.text = "Follow"
+                binding.btnFollow.setBackgroundColor(Color.parseColor("#222222"))
+            }
         }
 
         // Observe Upload State for profile image updates
