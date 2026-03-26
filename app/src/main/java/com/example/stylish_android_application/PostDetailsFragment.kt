@@ -78,6 +78,8 @@ class PostDetailsFragment : Fragment() {
         setupBrandDetailView(post.brandJacket, card.layoutJacket, card.lblJacket)
         setupBrandDetailView(post.brandShoes, card.layoutShoes, card.lblShoes)
         setupBrandDetailView(post.brandBag, card.layoutBag, card.lblBag)
+        setupBrandDetailView(post.brandGlasses, card.layoutGlasses, card.lblGlasses)
+        setupBrandDetailView(post.brandAccessories, card.layoutAccessories, card.lblAccessories)
         setupBrandDetailView(post.occasion, card.layoutTarget, card.lbTarget)
 
         // --- טעינת התמונה המהירה דרך Glide ---

@@ -192,174 +192,34 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-<!--        <LinearLayout-->
-<!--            android:id="@+id/row1"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginTop="10dp"-->
-<!--            android:orientation="horizontal"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/tvBrandLabel">-->
+        <LinearLayout
+            android:id="@+id/row4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/row3">
 
-<!--            <com.google.android.material.textfield.TextInputLayout-->
-<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:hint="Top"-->
-<!--                app:expandedHintEnabled="false"-->
-<!--                app:boxCornerRadiusBottomEnd="15dp"-->
-<!--                app:boxCornerRadiusBottomStart="15dp"-->
-<!--                app:boxCornerRadiusTopEnd="15dp"-->
-<!--                app:boxCornerRadiusTopStart="15dp">-->
-<!--                <AutoCompleteTextView-->
-<!--                    android:id="@+id/etBrandTop"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:hint="type brand..."-->
-<!--                    android:inputType="text"-->
-<!--                    android:padding="6dp"-->
-<!--                    android:textSize="13sp" />-->
-<!--            </com.google.android.material.textfield.TextInputLayout>-->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/OutfitInputLayout"
+                android:hint="Glasses">
 
-<!--            <View android:layout_width="10dp" android:layout_height="1dp" />-->
+                <AutoCompleteTextView
+                    android:id="@+id/etGlasses"
+                    style="@style/OutfitAutoCompleteText" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-<!--            <com.google.android.material.textfield.TextInputLayout-->
-<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:hint="Bottom"-->
-<!--                app:expandedHintEnabled="false"-->
-<!--                -->
-<!--                app:boxCornerRadiusBottomEnd="15dp"-->
-<!--                app:boxCornerRadiusBottomStart="15dp"-->
-<!--                app:boxCornerRadiusTopEnd="15dp"-->
-<!--                app:boxCornerRadiusTopStart="15dp">-->
-<!--                <AutoCompleteTextView-->
-<!--                    android:id="@+id/etBrandBottom"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:hint="type brand..."-->
-<!--                    android:textColorHint="#BDBDBD"-->
-<!--                    android:padding="6dp"-->
-<!--                    android:inputType="text"-->
-<!--                    android:textSize="13sp" />-->
-<!--            </com.google.android.material.textfield.TextInputLayout>-->
-<!--        </LinearLayout>-->
+            <View android:layout_width="10dp" android:layout_height="1dp" />
 
-<!--        <LinearLayout-->
-<!--            android:id="@+id/row2"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginTop="10dp"-->
-<!--            android:orientation="horizontal"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/row1">-->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/OutfitInputLayout"
+                android:hint="Accessories">
 
-<!--            <com.google.android.material.textfield.TextInputLayout-->
-<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:hint="Jacket"-->
-<!--                app:expandedHintEnabled="false"-->
-<!--                -->
-<!--                app:boxCornerRadiusBottomEnd="15dp"-->
-<!--                app:boxCornerRadiusBottomStart="15dp"-->
-<!--                app:boxCornerRadiusTopEnd="15dp"-->
-<!--                app:boxCornerRadiusTopStart="15dp">-->
-<!--                <AutoCompleteTextView-->
-<!--                    android:id="@+id/etJacket"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:hint="type brand..."-->
-<!--                    android:textColorHint="#BDBDBD"-->
-<!--                    android:padding="6dp"-->
-<!--                    android:inputType="text"-->
-<!--                    android:textSize="13sp" />-->
-<!--            </com.google.android.material.textfield.TextInputLayout>-->
-
-<!--            <View android:layout_width="10dp" android:layout_height="1dp" />-->
-
-<!--            <com.google.android.material.textfield.TextInputLayout-->
-<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:hint="Shoes"-->
-<!--                app:expandedHintEnabled="false"-->
-<!--                -->
-<!--                app:boxCornerRadiusBottomEnd="15dp"-->
-<!--                app:boxCornerRadiusBottomStart="15dp"-->
-<!--                app:boxCornerRadiusTopEnd="15dp"-->
-<!--                app:boxCornerRadiusTopStart="15dp">-->
-<!--                <AutoCompleteTextView-->
-<!--                    android:id="@+id/etShoes"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:hint="type brand..."-->
-<!--                    android:textColorHint="#BDBDBD"-->
-<!--                    android:padding="6dp"-->
-<!--                    android:inputType="text"-->
-<!--                    android:textSize="13sp" />-->
-<!--            </com.google.android.material.textfield.TextInputLayout>-->
-<!--        </LinearLayout>-->
-
-<!--        <LinearLayout-->
-<!--            android:id="@+id/row3"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginTop="10dp"-->
-<!--            android:orientation="horizontal"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/row2">-->
-
-<!--            <com.google.android.material.textfield.TextInputLayout-->
-<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:hint="Bag"-->
-<!--                app:expandedHintEnabled="false"-->
-<!--                -->
-<!--                app:boxCornerRadiusBottomEnd="15dp"-->
-<!--                app:boxCornerRadiusBottomStart="15dp"-->
-<!--                app:boxCornerRadiusTopEnd="15dp"-->
-<!--                app:boxCornerRadiusTopStart="15dp">-->
-<!--                <AutoCompleteTextView-->
-<!--                    android:id="@+id/etBag"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:hint="type brand..."-->
-<!--                    android:textColorHint="#BDBDBD"-->
-<!--                    android:padding="6dp"-->
-<!--                    android:inputType="text"-->
-<!--                    android:textSize="13sp" />-->
-<!--            </com.google.android.material.textfield.TextInputLayout>-->
-
-<!--            <View android:layout_width="10dp" android:layout_height="1dp" />-->
-
-<!--            <com.google.android.material.textfield.TextInputLayout-->
-<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:hint="Dress"-->
-<!--                app:expandedHintEnabled="false"-->
-<!--                -->
-<!--                app:boxCornerRadiusBottomEnd="15dp"-->
-<!--                app:boxCornerRadiusBottomStart="15dp"-->
-<!--                app:boxCornerRadiusTopEnd="15dp"-->
-<!--                app:boxCornerRadiusTopStart="15dp">-->
-<!--                <AutoCompleteTextView-->
-<!--                    android:id="@+id/etDress"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:hint="type brand..."-->
-<!--                    android:textColorHint="#BDBDBD"-->
-<!--                    android:padding="6dp"-->
-<!--                    android:inputType="text"-->
-<!--                    android:textSize="13sp" />-->
-<!--            </com.google.android.material.textfield.TextInputLayout>-->
-<!--        </LinearLayout>-->
+                <AutoCompleteTextView
+                    android:id="@+id/etAccessories"
+                    style="@style/OutfitAutoCompleteText" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvOccasionLabel"
@@ -371,7 +231,7 @@
             android:textColor="#717171"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/row3" />
+            app:layout_constraintTop_toBottomOf="@id/row4" />
 
         <FrameLayout
             android:id="@+id/spinnerFrame"

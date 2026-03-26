@@ -21,7 +21,7 @@
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar.Bridge"/>
         <activity
             android:name="com.canhub.cropper.CropImageActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
             android:name=".LoginActivity"
             android:exported="true"

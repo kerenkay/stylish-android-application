@@ -42,7 +42,9 @@ class AddPostViewModel : ViewModel() {
         brandJacket: String,
         brandShoes: String,
         brandBag: String,
-        brandDress: String
+        brandDress: String,
+        brandGlasses: String,
+        brandAccessories: String
     ) {
         // Notify the Fragment to show a loading indicator
         _uploadState.value = UploadState.Loading
@@ -82,6 +84,8 @@ class AddPostViewModel : ViewModel() {
                     brandShoes = brandShoes,
                     brandBag = brandBag,
                     brandDress = brandDress,
+                    brandGlasses = brandGlasses,
+                    brandAccessories = brandAccessories,
                     weatherCategory = aiCategory,
                     timestamp = System.currentTimeMillis()
                 )

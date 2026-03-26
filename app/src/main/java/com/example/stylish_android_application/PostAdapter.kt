@@ -47,6 +47,8 @@ class PostsAdapter(
         setupBrandView(post.brandJacket, holder.binding.layoutJacket, holder.binding.lblJacket)
         setupBrandView(post.brandShoes, holder.binding.layoutShoes, holder.binding.lblShoes)
         setupBrandView(post.brandBag, holder.binding.layoutBag, holder.binding.lblBag)
+        setupBrandView(post.brandGlasses, holder.binding.layoutGlasses, holder.binding.lblGlasses)
+        setupBrandView(post.brandAccessories, holder.binding.layoutAccessories, holder.binding.lblAccessories)
         setupBrandView(post.occasion, holder.binding.layoutTarget, holder.binding.lbTarget)
 
         // --- תמונה ---
@@ -54,15 +56,14 @@ class PostsAdapter(
         if (post.imageUrl.isNotEmpty()) {
             Glide.with(holder.itemView.context)
                 .load(post.imageUrl)
-                .thumbnail(0.1f) // הטריק: טוען מיד גרסה מטושטשת ב-10% איכות למניעת מסך ריק!
-                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL) // שומר לזיכרון
+                .thumbnail(0.1f)
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.img_outfit)
                 .into(holder.binding.imgMain)
         } else {
             holder.binding.imgMain.setImageResource(R.drawable.img_outfit)
         }
 
-        // --- לוגיקה ללייקים ---
         val isLikedByMe = post.likedBy.contains(currentUserId)
         if (isLikedByMe) {
             holder.binding.btnLike.setIconResource(R.drawable.ic_heart_full)
@@ -72,9 +73,23 @@ class PostsAdapter(
             holder.binding.btnLike.setIconTintResource(android.R.color.black)
         }
 
-        // --- לחיצות ---
         holder.binding.btnLike.setOnClickListener {
+            if (currentUserId == null) return@setOnClickListener
             onLikeClicked(post)
+            val isLikedByMe = post.likedBy.contains(currentUserId)
+            val updatedLikedBy = post.likedBy.toMutableList()
+
+            if (isLikedByMe) {
+                updatedLikedBy.remove(currentUserId)
+                holder.binding.btnLike.setIconResource(R.drawable.ic_heart)
+                holder.binding.btnLike.setIconTintResource(android.R.color.black)
+            } else {
+                updatedLikedBy.add(currentUserId)
+                holder.binding.btnLike.setIconResource(R.drawable.ic_heart_full)
+                holder.binding.btnLike.setIconTintResource(R.color.red) // ודאי שיש לך צבע כזה ב-res/values/colors.xml
+            }
+
+            post.likedBy = updatedLikedBy as ArrayList<String>
             holder.binding.lblLikeCount.text = post.likedBy.size.toString()
         }
 
@@ -83,7 +98,6 @@ class PostsAdapter(
 //        }
 
         holder.binding.lblUser.setOnClickListener {
-            // קוראים לפונקציה שמעבירה את ה-ID החוצה
             onUserClicked(post.userId)
         }
 

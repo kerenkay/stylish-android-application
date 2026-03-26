@@ -29,10 +29,11 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLike"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:scaleType="centerCrop"
             android:padding="0dp"
             app:iconGravity="textStart"
             app:icon="@drawable/ic_heart"
@@ -81,7 +82,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="12dp"
-            app:constraint_referenced_ids="layoutTop,layoutBottom,layoutDress,layoutJacket,layoutShoes,layoutBag,layoutTarget"
+            app:constraint_referenced_ids="layoutTop,layoutBottom,layoutDress,layoutJacket,layoutShoes,layoutBag, layoutGlasses, layoutAccessories, layoutTarget"
             app:flow_horizontalBias="0.0"
             app:flow_horizontalGap="12dp"
             app:flow_horizontalStyle="packed"
@@ -118,7 +119,17 @@
 
         <LinearLayout android:id="@+id/layoutBag" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
             <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgBagIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_bag" />
-            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblBag" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="work" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblBag" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="Aldo" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutGlasses" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgGlassesIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_glasses" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblGlasses" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="castro" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layoutAccessories" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">
+            <androidx.appcompat.widget.AppCompatImageView android:id="@+id/imgAccessoriesIcon" android:layout_width="14dp" android:layout_height="14dp" app:srcCompat="@drawable/img_jewelry" />
+            <com.google.android.material.textview.MaterialTextView android:id="@+id/lblAccessories" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:textSize="12sp" tools:text="Shein" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/layoutTarget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" tools:ignore="MissingConstraints">

@@ -32,13 +32,14 @@ class AddPostFragment : Fragment() {
     // 1. Declare the ViewModel
     private lateinit var viewModel: AddPostViewModel
 
-    private val occasions = arrayOf("daily", "work", "night out", "date", "wedding", "event", "other")
+    private val occasions = arrayOf("daily", "work", "brunch", "night out", "date", "wedding", "event", "other")
 
     private val brandSuggestions = arrayOf(
         "Zara", "H&M", "Nike", "Adidas", "Pull & Bear", "Bershka", "Stradivarius", "reserved",
         "Mango", "Massimo Dutti", "Levi's", "Diesel", "Castro", "Renuar", "Twentyfourseven",
         "Urban Outfitters", "ASOS", "Shein", "Gucci", "Prada", "Chanel", "Jordan",
-        "New Balance", "Vans", "Converse", "Puma", "Terminal X", "Fox", "Gali"
+        "New Balance", "Vans", "Converse", "Puma", "Terminal X", "Fox", "Gali", "Fashion Club",
+        "Carolina", "Blueberry", "Miss Nori", "Adika", "Yanga", "Cropp", "Aldo", "Black & white"
     )
 
     private val cropImageLauncher = registerForActivityResult(CropImageContract()) { result ->
@@ -105,6 +106,8 @@ class AddPostFragment : Fragment() {
         binding.etShoes.setAdapter(adapter)
         binding.etBag.setAdapter(adapter)
         binding.etDress.setAdapter(adapter)
+        binding.etGlasses.setAdapter(adapter)
+        binding.etAccessories.setAdapter(adapter)
     }
 
     private fun setupSpinner() {
@@ -187,7 +190,9 @@ class AddPostFragment : Fragment() {
                         brandJacket = binding.etJacket.text.toString().trim(),
                         brandShoes = binding.etShoes.text.toString().trim(),
                         brandBag = binding.etBag.text.toString().trim(),
-                        brandDress = binding.etDress.text.toString().trim()
+                        brandDress = binding.etDress.text.toString().trim(),
+                        brandGlasses = binding.etGlasses.text.toString().trim(),
+                        brandAccessories = binding.etAccessories.text.toString().trim()
                     )
                 } else {
                     Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()

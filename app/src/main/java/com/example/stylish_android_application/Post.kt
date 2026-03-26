@@ -13,7 +13,9 @@ data class Post(
     val brandShoes: String = "",
     val brandBag: String = "",
     val brandDress: String = "",
+    val brandGlasses: String = "",
+    val brandAccessories: String = "",
     val weatherCategory: String = "",
-    val likedBy: ArrayList<String> = ArrayList(),
+    var likedBy: ArrayList<String> = ArrayList(),
     val timestamp: Long = 0
 ): Serializable
