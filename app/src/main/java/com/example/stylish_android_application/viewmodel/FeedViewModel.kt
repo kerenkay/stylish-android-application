@@ -136,6 +136,15 @@ class FeedViewModel : ViewModel() {
             }
     }
 
+    fun refresh() {
+        isFetching = false
+        isLastPage = false
+        lastVisibleDocument = null
+        currentPosts.clear()
+        _postsList.value = emptyList()
+        loadFollowingListAndPosts()
+    }
+
     fun toggleLike(post: Post) {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.id)

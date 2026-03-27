@@ -78,6 +78,13 @@ class FeedFragment : Fragment() {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::viewModel.isInitialized) {
+            viewModel.refresh()
+        }
+    }
+
     // 3. Listen to data changes from the ViewModel
     private fun setupObservers() {
         viewModel.postsList.observe(viewLifecycleOwner) { posts ->

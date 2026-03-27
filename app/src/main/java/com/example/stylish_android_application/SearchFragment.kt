@@ -47,6 +47,13 @@ class SearchFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::viewModel.isInitialized) {
+            viewModel.reload()
+        }
+    }
+
     private fun setupRecyclerView() {
         binding.rvSearchResults.layoutManager = GridLayoutManager(context, 3)
         // משתמשים בפונקציה updatePosts שיש לנו באדפטר

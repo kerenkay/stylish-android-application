@@ -35,6 +35,12 @@ class SearchViewModel : ViewModel() {
             }
     }
 
+    fun reload() {
+        allPosts.clear()
+        _displayedPosts.value = emptyList()
+        loadAllPosts()
+    }
+
     fun filterPosts(query: String?) {
         if (query.isNullOrEmpty()) {
             _displayedPosts.value = allPosts
