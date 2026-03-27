@@ -11,6 +11,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -92,6 +93,11 @@ class AddPostViewModel : ViewModel() {
 
                 // 4. Save the Post document to Firestore
                 FirebaseFirestore.getInstance().collection("posts").add(post).await()
+
+                // 5. Ensure user document has username stored (used by followers/following list)
+                FirebaseFirestore.getInstance().collection("users").document(currentUser.uid)
+                    .set(hashMapOf("username" to userName), SetOptions.merge())
+                    .await()
 
                 // Notify the Fragment that the upload is complete
                 _uploadState.postValue(UploadState.Success)

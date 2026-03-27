@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.stylish_android_application.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class PostsAdapter(
     private var posts: List<Post>,
@@ -17,6 +19,8 @@ class PostsAdapter(
 ) : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
 
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+    // Cache: userId → profileImageUrl (null means "fetched but no image")
+    private val profileImageCache = HashMap<String, String?>()
 
     // --- שינוי 1: ה-ViewHolder מקבל עכשיו את ה-Binding במקום View רגיל ---
     // שימי לב שמחקנו מפה את כל ה-findViewById!
@@ -33,6 +37,41 @@ class PostsAdapter(
 
         holder.binding.lblUser.text = post.userName
         holder.binding.lblLikeCount.text = post.likedBy.size.toString()
+
+        // Profile image: reset to default, then load from cache or Firestore
+        holder.binding.imgProfile.setImageResource(R.drawable.img_profile)
+        holder.binding.imgProfile.tag = post.userId
+
+        if (profileImageCache.containsKey(post.userId)) {
+            val url = profileImageCache[post.userId]
+            if (!url.isNullOrEmpty()) {
+                Glide.with(holder.itemView.context)
+                    .load(url)
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.img_profile)
+                    .into(holder.binding.imgProfile)
+            }
+        } else {
+            FirebaseFirestore.getInstance().collection("users").document(post.userId)
+                .get()
+                .addOnSuccessListener { doc ->
+                    val url = doc.getString("profileImageUrl")
+                    profileImageCache[post.userId] = url
+                    if (!url.isNullOrEmpty() && holder.binding.imgProfile.tag == post.userId) {
+                        Glide.with(holder.itemView.context)
+                            .load(url)
+                            .circleCrop()
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .placeholder(R.drawable.img_profile)
+                            .into(holder.binding.imgProfile)
+                    }
+                }
+        }
+
+        holder.binding.imgProfile.setOnClickListener {
+            onUserClicked(post.userId)
+        }
 
         if (post.description.isEmpty()) {
             holder.binding.lblDescription.visibility = View.GONE
@@ -101,10 +140,6 @@ class PostsAdapter(
             onUserClicked(post.userId)
         }
 
-//        // (מומלץ להוסיף את אותה לחיצה גם על תמונת הפרופיל שלו בפוסט)
-//        holder.binding.imgProfileSmall.setOnClickListener {
-//            onUserClicked(post.userId)
-//        }
     }
 
     override fun getItemCount() = posts.size

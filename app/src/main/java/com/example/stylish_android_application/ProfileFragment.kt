@@ -32,6 +32,7 @@ class ProfileFragment : Fragment() {
     // 1. Declare the ViewModel
     private lateinit var viewModel: ProfileViewModel
     private lateinit var adapter: ProfileAdapter
+    private var targetUserId: String = ""
 
     // Launcher for picking an image from the gallery
     private val pickProfileImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -53,12 +54,13 @@ class ProfileFragment : Fragment() {
 
         // Determine which user profile to show
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-        val targetUserId = arguments?.getString("USER_ID") ?: currentUserId ?: return
+        targetUserId = arguments?.getString("USER_ID") ?: currentUserId ?: return
         val isCurrentUser = (currentUserId == targetUserId)
 
-        setupUI(targetUserId,isCurrentUser)
+        setupUI(targetUserId, isCurrentUser)
         setupRecyclerView()
         setupObservers()
+        setupFollowListNavigation()
 
         // 3. Tell the ViewModel to start fetching data!
         viewModel.loadUserProfile(targetUserId, isCurrentUser)
@@ -252,6 +254,23 @@ class ProfileFragment : Fragment() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun setupFollowListNavigation() {
+        binding.tvFollowers.setOnClickListener { openFollowList("FOLLOWERS") }
+        binding.tvFollowing.setOnClickListener { openFollowList("FOLLOWING") }
+    }
+
+    private fun openFollowList(mode: String) {
+        val fragment = FollowListFragment()
+        fragment.arguments = Bundle().apply {
+            putString("USER_ID", targetUserId)
+            putString("MODE", mode)
+        }
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onDestroyView() {

@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 
 class PostDetailsFragment : Fragment() {
 
@@ -55,7 +56,7 @@ class PostDetailsFragment : Fragment() {
 
         // 2. מחברים את הלחיצה לרכיבים!
         // שימי לב שאנחנו ניגשים אליהם דרך 'fullPostCard'
-//        binding.fullPostCard.imgProfile.setOnClickListener(onUserClicked)
+        binding.fullPostCard.imgProfile.setOnClickListener(onUserClicked)
         binding.fullPostCard.lblUser.setOnClickListener(onUserClicked)
     }
 
@@ -64,6 +65,22 @@ class PostDetailsFragment : Fragment() {
         val card = binding.fullPostCard
         card.lblUser.text = post.userName
         card.lblLikeCount.text = post.likedBy.size.toString()
+
+        // Load poster's profile image
+        card.imgProfile.setImageResource(R.drawable.img_profile)
+        FirebaseFirestore.getInstance().collection("users").document(post.userId)
+            .get()
+            .addOnSuccessListener { doc ->
+                val url = doc.getString("profileImageUrl")
+                if (!url.isNullOrEmpty() && isAdded) {
+                    Glide.with(requireContext())
+                        .load(url)
+                        .circleCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .placeholder(R.drawable.img_profile)
+                        .into(card.imgProfile)
+                }
+            }
 
         if (post.description.isEmpty()) {
             card.lblDescription.visibility = View.GONE
