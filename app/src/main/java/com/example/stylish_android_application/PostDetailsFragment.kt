@@ -195,12 +195,19 @@ class PostDetailsFragment : Fragment() {
         _binding = null
     }
 
-    private fun setupBrandDetailView(brandName: String, container: View, textView: android.widget.TextView) {
-        if (brandName.isEmpty()) {
+    private fun setupBrandDetailView(brandInput: String, container: View, textView: android.widget.TextView) {
+        if (brandInput.isEmpty()) {
             container.visibility = View.GONE
+            container.setOnClickListener(null)
         } else {
             container.visibility = View.VISIBLE
-            textView.text = brandName
+            if (BrandHelper.isUrl(brandInput)) {
+                textView.text = BrandHelper.extractBrandName(brandInput)
+                container.setOnClickListener { BrandHelper.openUrl(requireContext(), brandInput) }
+            } else {
+                textView.text = brandInput
+                container.setOnClickListener(null)
+            }
         }
     }
 }

@@ -80,15 +80,16 @@ class PostsAdapter(
             holder.binding.lblDescription.text = post.description
         }
 
-        setupBrandView(post.brandTop, holder.binding.layoutTop, holder.binding.lblTop)
-        setupBrandView(post.brandBottom, holder.binding.layoutBottom, holder.binding.lblBottom)
-        setupBrandView(post.brandDress, holder.binding.layoutDress, holder.binding.lblDress)
-        setupBrandView(post.brandJacket, holder.binding.layoutJacket, holder.binding.lblJacket)
-        setupBrandView(post.brandShoes, holder.binding.layoutShoes, holder.binding.lblShoes)
-        setupBrandView(post.brandBag, holder.binding.layoutBag, holder.binding.lblBag)
-        setupBrandView(post.brandGlasses, holder.binding.layoutGlasses, holder.binding.lblGlasses)
-        setupBrandView(post.brandAccessories, holder.binding.layoutAccessories, holder.binding.lblAccessories)
-        setupBrandView(post.occasion, holder.binding.layoutTarget, holder.binding.lbTarget)
+        val ctx = holder.itemView.context
+        setupBrandView(ctx, post.brandTop, holder.binding.layoutTop, holder.binding.lblTop)
+        setupBrandView(ctx, post.brandBottom, holder.binding.layoutBottom, holder.binding.lblBottom)
+        setupBrandView(ctx, post.brandDress, holder.binding.layoutDress, holder.binding.lblDress)
+        setupBrandView(ctx, post.brandJacket, holder.binding.layoutJacket, holder.binding.lblJacket)
+        setupBrandView(ctx, post.brandShoes, holder.binding.layoutShoes, holder.binding.lblShoes)
+        setupBrandView(ctx, post.brandBag, holder.binding.layoutBag, holder.binding.lblBag)
+        setupBrandView(ctx, post.brandGlasses, holder.binding.layoutGlasses, holder.binding.lblGlasses)
+        setupBrandView(ctx, post.brandAccessories, holder.binding.layoutAccessories, holder.binding.lblAccessories)
+        setupBrandView(ctx, post.occasion, holder.binding.layoutTarget, holder.binding.lbTarget)
 
         // --- תמונה ---
         // --- תמונה מהירה דרך Glide ---
@@ -154,12 +155,24 @@ class PostsAdapter(
         notifyDataSetChanged()
     }
 
-    private fun setupBrandView(brandName: String, container: View, textView: android.widget.TextView) {
-        if (brandName.isEmpty()) {
+    private fun setupBrandView(
+        context: android.content.Context,
+        brandInput: String,
+        container: View,
+        textView: android.widget.TextView
+    ) {
+        if (brandInput.isEmpty()) {
             container.visibility = View.GONE
+            container.setOnClickListener(null)
         } else {
             container.visibility = View.VISIBLE
-            textView.text = brandName
+            if (BrandHelper.isUrl(brandInput)) {
+                textView.text = BrandHelper.extractBrandName(brandInput)
+                container.setOnClickListener { BrandHelper.openUrl(context, brandInput) }
+            } else {
+                textView.text = brandInput
+                container.setOnClickListener(null)
+            }
         }
     }
 }
