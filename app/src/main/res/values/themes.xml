@@ -31,13 +31,14 @@
         <item name="boxCornerRadiusBottomStart">15dp</item>
         <item name="boxCornerRadiusTopEnd">15dp</item>
         <item name="boxCornerRadiusTopStart">15dp</item>
+        <item name="iconSize">18dp</item>
     </style>
 
     <style name="OutfitAutoCompleteText" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">15dp</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:textSize">13sp</item>
         <item name="android:inputType">text</item>
         <item name="android:hint">type brand...</item></style>
 

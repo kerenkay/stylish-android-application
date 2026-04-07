@@ -1,12 +1,18 @@
 package com.example.stylish_android_application
 
+import android.app.Dialog
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -16,9 +22,11 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.example.stylish_android_application.databinding.FragmentAddPostBinding
+import com.example.stylish_android_application.databinding.DialogBrandLinkBinding
 import com.example.stylish_android_application.utils.ImageUtils
 import com.example.stylish_android_application.viewmodel.AddPostViewModel
 import com.example.stylish_android_application.viewmodel.UploadState
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,8 +37,10 @@ class AddPostFragment : Fragment() {
     private val binding get() = _binding!!
     private var selectedImageUri: Uri? = null
 
-    // 1. Declare the ViewModel
     private lateinit var viewModel: AddPostViewModel
+
+    // Maps each brand field to its stored URL (plain URL or composite "name||url")
+    private val brandUrlMap = mutableMapOf<AutoCompleteTextView, String>()
 
     private val occasions = arrayOf("daily", "work", "brunch", "night out", "date", "wedding", "event", "other")
 
@@ -66,12 +76,12 @@ class AddPostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 2. Initialize the ViewModel
         viewModel = ViewModelProvider(this)[AddPostViewModel::class.java]
 
         setupSpinner()
         setupBrandAutocomplete()
-        setupObservers() // Listen to the ViewModel's state
+        setupBrandLinkIcons()
+        setupObservers()
 
         binding.addPost.setOnClickListener {
             cropImageLauncher.launch(
@@ -93,6 +103,102 @@ class AddPostFragment : Fragment() {
             if (validateInput()) {
                 startUploadProcess()
             }
+        }
+    }
+
+    // --- Brand Link Icons ---
+
+    private fun setupBrandLinkIcons() {
+        val fields = listOf(
+            binding.etBrandTop to binding.layoutBrandTop,
+            binding.etBrandBottom to binding.layoutBrandBottom,
+            binding.etJacket to binding.layoutBrandJacket,
+            binding.etShoes to binding.layoutBrandShoes,
+            binding.etBag to binding.layoutBrandBag,
+            binding.etDress to binding.layoutBrandDress,
+            binding.etGlasses to binding.layoutBrandGlasses,
+            binding.etAccessories to binding.layoutBrandAccessories
+        )
+        for ((field, layout) in fields) {
+            layout.endIconMode = TextInputLayout.END_ICON_CUSTOM
+            layout.setEndIconDrawable(R.drawable.ic_link)
+            updateLinkIconTint(field, layout)
+            layout.setEndIconOnClickListener { showLinkDialog(field, layout) }
+        }
+    }
+
+    private fun updateLinkIconTint(field: AutoCompleteTextView, layout: TextInputLayout) {
+        val hasLink = brandUrlMap.containsKey(field)
+        val color = if (hasLink) Color.parseColor("#222222") else Color.parseColor("#BBBBBB")
+        layout.setEndIconTintList(ColorStateList.valueOf(color))
+    }
+
+    private fun showLinkDialog(field: AutoCompleteTextView, layout: TextInputLayout) {
+        val currentValue = brandUrlMap[field]
+        val dialogBinding = DialogBrandLinkBinding.inflate(LayoutInflater.from(requireContext()))
+
+        dialogBinding.tvDialogTitle.text = if (currentValue != null) "Edit Link" else "Add Link"
+        dialogBinding.etDialogBrandName.setText(
+            if (currentValue != null) BrandHelper.extractBrandName(currentValue)
+            else field.text.toString().trim()
+        )
+        dialogBinding.etDialogUrl.setText(if (currentValue != null) BrandHelper.getUrl(currentValue) else "")
+        if (currentValue != null) dialogBinding.btnRemoveLink.visibility = View.VISIBLE
+
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(dialogBinding.root)
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                (resources.displayMetrics.widthPixels * 0.9).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        dialogBinding.btnSaveLink.setOnClickListener {
+            val newName = dialogBinding.etDialogBrandName.text.toString().trim()
+            val newUrl = dialogBinding.etDialogUrl.text.toString().trim()
+
+            if (newUrl.isEmpty()) {
+                brandUrlMap.remove(field)
+                updateLinkIconTint(field, layout)
+                dialog.dismiss()
+                return@setOnClickListener
+            }
+            if (!newUrl.startsWith("http://") && !newUrl.startsWith("https://")) {
+                Toast.makeText(requireContext(), "Please enter a valid URL", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            brandUrlMap[field] = BrandHelper.buildValue(newName, newUrl)
+            if (field.text.isNullOrEmpty() && newName.isEmpty()) {
+                field.setText(BrandHelper.extractBrandName(newUrl))
+            } else if (newName.isNotEmpty()) {
+                field.setText(newName)
+            }
+            updateLinkIconTint(field, layout)
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnRemoveLink.setOnClickListener {
+            brandUrlMap.remove(field)
+            updateLinkIconTint(field, layout)
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnCancelLink.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    private fun getBrandValue(field: AutoCompleteTextView): String {
+        val storedUrl = brandUrlMap[field]
+        val typedName = field.text.toString().trim()
+        return when {
+            storedUrl != null && typedName.isNotEmpty() -> BrandHelper.buildValue(typedName, BrandHelper.getUrl(storedUrl))
+            storedUrl != null -> storedUrl
+            else -> typedName
         }
     }
 
@@ -139,7 +245,6 @@ class AddPostFragment : Fragment() {
     // --- Architecture Magic: Observing and Delegating ---
 
     private fun setupObservers() {
-        // 3. The Fragment only listens and updates the UI based on the state
         viewModel.uploadState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UploadState.Loading -> {
@@ -157,9 +262,7 @@ class AddPostFragment : Fragment() {
                     binding.btnPost.text = "Share Outfit"
                     viewModel.resetState()
                 }
-                is UploadState.Idle -> {
-                    // Do nothing, just waiting for user action
-                }
+                is UploadState.Idle -> { }
             }
         }
     }
@@ -171,7 +274,6 @@ class AddPostFragment : Fragment() {
             finalOccasion = binding.etOccasionOther.text.toString().trim()
         }
 
-        // Process the image on a background thread to avoid freezing the UI
         lifecycleScope.launch(Dispatchers.Default) {
             val imagePair = ImageUtils.processImageForUpload(requireContext(), uri)
 
@@ -179,20 +281,19 @@ class AddPostFragment : Fragment() {
                 if (imagePair != null) {
                     val (bitmap, imageBytes) = imagePair
 
-                    // 4. Pass everything to the ViewModel to handle the business logic!
                     viewModel.uploadPost(
                         bitmap = bitmap,
                         imageBytes = imageBytes,
                         description = binding.etDescription.text.toString().trim(),
-                        brandTop = binding.etBrandTop.text.toString().trim(),
-                        brandBottom = binding.etBrandBottom.text.toString().trim(),
+                        brandTop = getBrandValue(binding.etBrandTop),
+                        brandBottom = getBrandValue(binding.etBrandBottom),
                         occasion = finalOccasion,
-                        brandJacket = binding.etJacket.text.toString().trim(),
-                        brandShoes = binding.etShoes.text.toString().trim(),
-                        brandBag = binding.etBag.text.toString().trim(),
-                        brandDress = binding.etDress.text.toString().trim(),
-                        brandGlasses = binding.etGlasses.text.toString().trim(),
-                        brandAccessories = binding.etAccessories.text.toString().trim()
+                        brandJacket = getBrandValue(binding.etJacket),
+                        brandShoes = getBrandValue(binding.etShoes),
+                        brandBag = getBrandValue(binding.etBag),
+                        brandDress = getBrandValue(binding.etDress),
+                        brandGlasses = getBrandValue(binding.etGlasses),
+                        brandAccessories = getBrandValue(binding.etAccessories)
                     )
                 } else {
                     Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()

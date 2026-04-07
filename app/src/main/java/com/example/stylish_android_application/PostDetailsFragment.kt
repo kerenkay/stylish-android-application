@@ -22,6 +22,8 @@ class PostDetailsFragment : Fragment() {
     private val binding get() = _binding!!
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
+    private var currentPost: Post? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentPostDetailsBinding.inflate(inflater, container, false)
         return binding.root
@@ -30,13 +32,15 @@ class PostDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val post = arguments?.getSerializable("post") as? Post
+        currentPost = arguments?.getSerializable("post") as? Post
+        currentPost?.let { render(it) }
 
-        post?.let { selectedPost ->
-            setupUI(selectedPost)
-            setupDeleteButton(selectedPost)
-            setupEditButton(selectedPost)
-            setupLikeButton(selectedPost)
+        parentFragmentManager.setFragmentResultListener("post_edited", viewLifecycleOwner) { _, bundle ->
+            val updatedPost = bundle.getSerializable("post") as? Post
+            updatedPost?.let {
+                currentPost = it
+                render(it)
+            }
         }
 
         binding.btnBack.setOnClickListener {
@@ -46,7 +50,7 @@ class PostDetailsFragment : Fragment() {
         val onUserClicked = View.OnClickListener {
             val profileFragment = ProfileFragment()
             val bundle = Bundle()
-            bundle.putString("USER_ID", post?.userId)
+            bundle.putString("USER_ID", currentPost?.userId)
             profileFragment.arguments = bundle
 
             parentFragmentManager.beginTransaction()
@@ -55,10 +59,15 @@ class PostDetailsFragment : Fragment() {
                 .commit()
         }
 
-        // 2. מחברים את הלחיצה לרכיבים!
-        // שימי לב שאנחנו ניגשים אליהם דרך 'fullPostCard'
         binding.fullPostCard.imgProfile.setOnClickListener(onUserClicked)
         binding.fullPostCard.lblUser.setOnClickListener(onUserClicked)
+    }
+
+    private fun render(post: Post) {
+        setupUI(post)
+        setupDeleteButton(post)
+        setupEditButton(post)
+        setupLikeButton(post)
     }
 
     private fun setupUI(post: Post) {

@@ -76,6 +76,7 @@
             app:layout_constraintTop_toBottomOf="@id/tvBrandLabel">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandTop"
                 style="@style/OutfitInputLayout"
                 android:hint="Top">
                 <AutoCompleteTextView
@@ -86,6 +87,7 @@
             <View android:layout_width="10dp" android:layout_height="1dp" />
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandBottom"
                 style="@style/OutfitInputLayout"
                 android:hint="Bottom">
                 <AutoCompleteTextView
@@ -103,6 +105,7 @@
             app:layout_constraintTop_toBottomOf="@id/row1">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandJacket"
                 style="@style/OutfitInputLayout"
                 android:hint="Jacket">
                 <AutoCompleteTextView
@@ -113,6 +116,7 @@
             <View android:layout_width="10dp" android:layout_height="1dp" />
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandShoes"
                 style="@style/OutfitInputLayout"
                 android:hint="Shoes">
                 <AutoCompleteTextView
@@ -130,6 +134,7 @@
             app:layout_constraintTop_toBottomOf="@id/row2">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandBag"
                 style="@style/OutfitInputLayout"
                 android:hint="Bag">
                 <AutoCompleteTextView
@@ -140,6 +145,7 @@
             <View android:layout_width="10dp" android:layout_height="1dp" />
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandDress"
                 style="@style/OutfitInputLayout"
                 android:hint="Dress">
                 <AutoCompleteTextView
@@ -157,6 +163,7 @@
             app:layout_constraintTop_toBottomOf="@id/row3">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandGlasses"
                 style="@style/OutfitInputLayout"
                 android:hint="Glasses">
                 <AutoCompleteTextView
@@ -167,6 +174,7 @@
             <View android:layout_width="10dp" android:layout_height="1dp" />
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBrandAccessories"
                 style="@style/OutfitInputLayout"
                 android:hint="Accessories">
                 <AutoCompleteTextView
