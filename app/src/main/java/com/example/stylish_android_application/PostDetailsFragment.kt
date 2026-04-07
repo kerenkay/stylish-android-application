@@ -35,6 +35,7 @@ class PostDetailsFragment : Fragment() {
         post?.let { selectedPost ->
             setupUI(selectedPost)
             setupDeleteButton(selectedPost)
+            setupEditButton(selectedPost)
             setupLikeButton(selectedPost)
         }
 
@@ -109,6 +110,25 @@ class PostDetailsFragment : Fragment() {
                 .into(card.imgMain)
         } else {
             card.imgMain.setImageResource(R.drawable.img_outfit)
+        }
+    }
+
+    // --- לוגיקה לעריכת פוסט ---
+    private fun setupEditButton(post: Post) {
+        if (currentUserId == post.userId) {
+            binding.btnEdit.visibility = View.VISIBLE
+            binding.btnEdit.setOnClickListener {
+                val editFragment = EditPostFragment()
+                val bundle = Bundle()
+                bundle.putSerializable("post", post)
+                editFragment.arguments = bundle
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, editFragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        } else {
+            binding.btnEdit.visibility = View.GONE
         }
     }
 
@@ -203,9 +223,11 @@ class PostDetailsFragment : Fragment() {
             container.visibility = View.VISIBLE
             if (BrandHelper.isUrl(brandInput)) {
                 textView.text = BrandHelper.extractBrandName(brandInput)
+                textView.paintFlags = textView.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
                 container.setOnClickListener { BrandHelper.openUrl(requireContext(), brandInput) }
             } else {
                 textView.text = brandInput
+                textView.paintFlags = textView.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
                 container.setOnClickListener(null)
             }
         }

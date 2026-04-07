@@ -168,9 +168,11 @@ class PostsAdapter(
             container.visibility = View.VISIBLE
             if (BrandHelper.isUrl(brandInput)) {
                 textView.text = BrandHelper.extractBrandName(brandInput)
+                textView.paintFlags = textView.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
                 container.setOnClickListener { BrandHelper.openUrl(context, brandInput) }
             } else {
                 textView.text = brandInput
+                textView.paintFlags = textView.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
                 container.setOnClickListener(null)
             }
         }
