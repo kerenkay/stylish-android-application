@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stylish_android_application.Post
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -15,6 +16,13 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+
+sealed class UsernameUpdateState {
+    object Idle : UsernameUpdateState()
+    object Loading : UsernameUpdateState()
+    object Success : UsernameUpdateState()
+    data class Error(val message: String) : UsernameUpdateState()
+}
 
 class ProfileViewModel : ViewModel() {
     // User Info
@@ -44,6 +52,9 @@ class ProfileViewModel : ViewModel() {
     // Upload State (Reusing the state class we made earlier!)
     private val _uploadState = MutableLiveData<UploadState>(UploadState.Idle)
     val uploadState: LiveData<UploadState> = _uploadState
+
+    private val _usernameUpdateState = MutableLiveData<UsernameUpdateState>(UsernameUpdateState.Idle)
+    val usernameUpdateState: LiveData<UsernameUpdateState> = _usernameUpdateState
 
     // Keep track of listeners to remove them when ViewModel dies
     private var userListener: ListenerRegistration? = null
@@ -171,6 +182,74 @@ class ProfileViewModel : ViewModel() {
 
     fun resetUploadState() {
         _uploadState.value = UploadState.Idle
+    }
+
+    fun updateUsername(uid: String, newUsername: String) {
+        val trimmed = newUsername.trim()
+        if (trimmed.length < 2) {
+            _usernameUpdateState.value = UsernameUpdateState.Error("Username must be at least 2 characters")
+            return
+        }
+        if (trimmed.contains(" ")) {
+            _usernameUpdateState.value = UsernameUpdateState.Error("Username cannot contain spaces")
+            return
+        }
+        if (trimmed == _userName.value) {
+            _usernameUpdateState.value = UsernameUpdateState.Idle
+            return
+        }
+
+        _usernameUpdateState.value = UsernameUpdateState.Loading
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val db = FirebaseFirestore.getInstance()
+
+                // Check uniqueness
+                val existing = db.collection("users")
+                    .whereEqualTo("username", trimmed)
+                    .get()
+                    .await()
+
+                if (!existing.isEmpty && existing.documents[0].id != uid) {
+                    _usernameUpdateState.postValue(UsernameUpdateState.Error("Username is already taken"))
+                    return@launch
+                }
+
+                // Update users document
+                db.collection("users").document(uid)
+                    .set(hashMapOf("username" to trimmed), SetOptions.merge())
+                    .await()
+
+                // Update userName on all posts by this user
+                val posts = db.collection("posts")
+                    .whereEqualTo("userId", uid)
+                    .get()
+                    .await()
+
+                if (!posts.isEmpty) {
+                    val batch = db.batch()
+                    posts.documents.forEach { doc ->
+                        batch.update(doc.reference, "userName", trimmed)
+                    }
+                    batch.commit().await()
+                }
+
+                // Update FirebaseAuth display name
+                FirebaseAuth.getInstance().currentUser
+                    ?.updateProfile(UserProfileChangeRequest.Builder().setDisplayName(trimmed).build())
+                    ?.await()
+
+                _userName.postValue(trimmed)
+                _usernameUpdateState.postValue(UsernameUpdateState.Success)
+            } catch (e: Exception) {
+                _usernameUpdateState.postValue(UsernameUpdateState.Error(e.message ?: "Failed to update username"))
+            }
+        }
+    }
+
+    fun resetUsernameUpdateState() {
+        _usernameUpdateState.value = UsernameUpdateState.Idle
     }
 
     // Automatically called by Android when the Fragment is completely destroyed

@@ -1,13 +1,16 @@
 package com.example.stylish_android_application
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -15,10 +18,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
+import com.example.stylish_android_application.databinding.DialogEditUsernameBinding
 import com.example.stylish_android_application.databinding.FragmentProfileBinding
 import com.example.stylish_android_application.utils.ImageUtils
 import com.example.stylish_android_application.viewmodel.ProfileViewModel
 import com.example.stylish_android_application.viewmodel.UploadState
+import com.example.stylish_android_application.viewmodel.UsernameUpdateState
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,6 +78,11 @@ class ProfileFragment : Fragment() {
         if (isCurrentUser) {
             binding.btnLogout.visibility = View.VISIBLE
             binding.btnFollow.visibility = View.GONE
+            binding.btnEditUsername.visibility = View.VISIBLE
+
+            binding.btnEditUsername.setOnClickListener {
+                showEditUsernameDialog(targetUserId)
+            }
 
             // Long click to change profile picture
             binding.imgProfile.setOnLongClickListener {
@@ -184,6 +194,7 @@ class ProfileFragment : Fragment() {
                 is UploadState.Idle -> { /* Do nothing */ }
             }
         }
+
     }
 
     // --- Actions ---
@@ -240,6 +251,56 @@ class ProfileFragment : Fragment() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun showEditUsernameDialog(uid: String) {
+        val dialogBinding = DialogEditUsernameBinding.inflate(LayoutInflater.from(requireContext()))
+        dialogBinding.etNewUsername.setText(binding.tvUserName.text)
+
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(dialogBinding.root)
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                (resources.displayMetrics.widthPixels * 0.9).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val loadingObserver = androidx.lifecycle.Observer<UsernameUpdateState> { state ->
+            when (state) {
+                is UsernameUpdateState.Loading -> {
+                    dialogBinding.btnSaveUsername.isEnabled = false
+                    dialogBinding.btnSaveUsername.text = "Saving..."
+                    dialogBinding.layoutUsername.error = null
+                }
+                is UsernameUpdateState.Error -> {
+                    dialogBinding.btnSaveUsername.isEnabled = true
+                    dialogBinding.btnSaveUsername.text = "Save"
+                    dialogBinding.layoutUsername.error = state.message
+                    viewModel.resetUsernameUpdateState()
+                }
+                is UsernameUpdateState.Success -> {
+                    Toast.makeText(context, "Username updated!", Toast.LENGTH_SHORT).show()
+                    viewModel.resetUsernameUpdateState()
+                    dialog.dismiss()
+                }
+                else -> { }
+            }
+        }
+        viewModel.usernameUpdateState.observe(viewLifecycleOwner, loadingObserver)
+        dialog.setOnDismissListener {
+            viewModel.usernameUpdateState.removeObserver(loadingObserver)
+        }
+
+        dialogBinding.btnSaveUsername.setOnClickListener {
+            val newName = dialogBinding.etNewUsername.text.toString()
+            viewModel.updateUsername(uid, newName)
+        }
+        dialogBinding.btnCancelUsername.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
     }
 
     private fun showLogoutConfirmationDialog() {

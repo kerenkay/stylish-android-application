@@ -76,13 +76,16 @@ class PostDetailsFragment : Fragment() {
         card.lblUser.text = post.userName
         card.lblLikeCount.text = post.likedBy.size.toString()
 
-        // Load poster's profile image
+        // Load poster's profile image and latest username from Firestore
         card.imgProfile.setImageResource(R.drawable.img_profile)
         FirebaseFirestore.getInstance().collection("users").document(post.userId)
             .get()
             .addOnSuccessListener { doc ->
+                if (!isAdded) return@addOnSuccessListener
+                val username = doc.getString("username")
+                if (!username.isNullOrEmpty()) card.lblUser.text = username
                 val url = doc.getString("profileImageUrl")
-                if (!url.isNullOrEmpty() && isAdded) {
+                if (!url.isNullOrEmpty()) {
                     Glide.with(requireContext())
                         .load(url)
                         .circleCrop()
