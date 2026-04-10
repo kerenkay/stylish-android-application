@@ -1,6 +1,5 @@
 package com.example.stylish_android_application
 
-import android.app.AlertDialog
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
@@ -61,6 +60,18 @@ class PostDetailsFragment : Fragment() {
 
         binding.fullPostCard.imgProfile.setOnClickListener(onUserClicked)
         binding.fullPostCard.lblUser.setOnClickListener(onUserClicked)
+
+        binding.fullPostCard.btnComment.setOnClickListener {
+            val post = currentPost ?: return@setOnClickListener
+            CommentsBottomSheet.newInstance(post.id)
+                .show(childFragmentManager, "comments")
+        }
+
+        childFragmentManager.setFragmentResultListener("comment_count_changed", viewLifecycleOwner) { _, bundle ->
+            val newCount = bundle.getLong("commentCount")
+            currentPost?.commentCount = newCount
+            binding.fullPostCard.lblCommentCount.text = newCount.toString()
+        }
     }
 
     private fun render(post: Post) {
@@ -75,6 +86,7 @@ class PostDetailsFragment : Fragment() {
         val card = binding.fullPostCard
         card.lblUser.text = post.userName
         card.lblLikeCount.text = post.likedBy.size.toString()
+        card.lblCommentCount.text = post.commentCount.toString()
 
         // Load poster's profile image and latest username from Firestore
         card.imgProfile.setImageResource(R.drawable.img_profile)
@@ -159,14 +171,13 @@ class PostDetailsFragment : Fragment() {
     }
 
     private fun showDeleteConfirmationDialog(post: Post) {
-        AlertDialog.Builder(context)
-            .setTitle("Delete Post")
-            .setMessage("Are you sure you want to delete this post?")
-            .setPositiveButton("Delete") { _, _ ->
-                deletePostFromFirestore(post)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        showConfirmDialog(
+            context = requireContext(),
+            title = "Delete Post",
+            message = "Are you sure you want to delete this post?",
+            positiveLabel = "Delete",
+            onConfirm = { deletePostFromFirestore(post) }
+        )
     }
 
     private fun deletePostFromFirestore(post: Post) {

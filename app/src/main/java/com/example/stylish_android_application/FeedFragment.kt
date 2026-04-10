@@ -53,8 +53,18 @@ class FeedFragment : Fragment() {
                     .replace(R.id.fragment_container, profileFragment)
                     .addToBackStack(null)
                     .commit()
+            },
+            onCommentClicked = { post ->
+                CommentsBottomSheet.newInstance(post.id)
+                    .show(childFragmentManager, "comments")
             }
         )
+
+        childFragmentManager.setFragmentResultListener("comment_count_changed", viewLifecycleOwner) { _, bundle ->
+            val postId = bundle.getString("postId") ?: return@setFragmentResultListener
+            val newCount = bundle.getLong("commentCount")
+            viewModel.updateCommentCount(postId, newCount)
+        }
         val layoutManager = LinearLayoutManager(context)
         binding.rvPosts.layoutManager = LinearLayoutManager(context)
         binding.rvPosts.adapter = adapter

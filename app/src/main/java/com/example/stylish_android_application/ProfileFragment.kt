@@ -1,6 +1,5 @@
 package com.example.stylish_android_application
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
@@ -243,14 +242,13 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showChangeProfileImageDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Change Profile Picture")
-            .setMessage("Would you like to update your profile picture?")
-            .setPositiveButton("Change") { _, _ ->
-                pickProfileImage.launch("image/*")
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        showConfirmDialog(
+            context = requireContext(),
+            title = "Change Profile Picture",
+            message = "Would you like to update your profile picture?",
+            positiveLabel = "Change",
+            onConfirm = { pickProfileImage.launch("image/*") }
+        )
     }
 
     private fun showEditUsernameDialog(uid: String) {
@@ -304,17 +302,18 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showLogoutConfirmationDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Log Out")
-            .setMessage("Are you sure you want to log out of STYLISH?")
-            .setPositiveButton("Log Out") { _, _ ->
+        showConfirmDialog(
+            context = requireContext(),
+            title = "Log Out",
+            message = "Are you sure you want to log out of STYLISH?",
+            positiveLabel = "Log Out",
+            onConfirm = {
                 FirebaseAuth.getInstance().signOut()
                 val intent = Intent(requireContext(), LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        )
     }
 
     private fun setupFollowListNavigation() {

@@ -15,7 +15,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 class PostsAdapter(
     private var posts: List<Post>,
     private val onLikeClicked: (Post) -> Unit,
-    private val onUserClicked: (String) -> Unit
+    private val onUserClicked: (String) -> Unit,
+    private val onCommentClicked: (Post) -> Unit = {}
 ) : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
 
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -37,6 +38,8 @@ class PostsAdapter(
 
         holder.binding.lblUser.text = post.userName
         holder.binding.lblLikeCount.text = post.likedBy.size.toString()
+        holder.binding.lblCommentCount.text = post.commentCount.toString()
+        holder.binding.btnComment.setOnClickListener { onCommentClicked(post) }
 
         // Profile image: reset to default, then load from cache or Firestore
         holder.binding.imgProfile.setImageResource(R.drawable.img_profile)

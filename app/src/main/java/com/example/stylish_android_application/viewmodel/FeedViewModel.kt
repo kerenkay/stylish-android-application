@@ -145,6 +145,13 @@ class FeedViewModel : ViewModel() {
         loadFollowingListAndPosts()
     }
 
+    fun updateCommentCount(postId: String, newCount: Long) {
+        val updated = currentPosts.map { if (it.id == postId) it.copy(commentCount = newCount) else it }
+        currentPosts.clear()
+        currentPosts.addAll(updated)
+        _postsList.value = ArrayList(currentPosts)
+    }
+
     fun toggleLike(post: Post) {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.id)

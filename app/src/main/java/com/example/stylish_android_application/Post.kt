@@ -17,5 +17,6 @@ data class Post(
     val brandAccessories: String = "",
     val weatherCategory: String = "",
     var likedBy: ArrayList<String> = ArrayList(),
-    val timestamp: Long = 0
+    val timestamp: Long = 0,
+    var commentCount: Long = 0
 ): Serializable
