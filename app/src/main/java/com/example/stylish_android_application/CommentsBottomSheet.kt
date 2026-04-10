@@ -1,5 +1,6 @@
 package com.example.stylish_android_application
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -43,7 +44,11 @@ class CommentsBottomSheet : BottomSheetDialogFragment() {
 
         viewModel.comments.observe(viewLifecycleOwner) { comments ->
             adapter.updateComments(comments)
-            binding.rvComments.scrollToPosition(comments.size - 1)
+            if (comments.isNotEmpty()) binding.rvComments.scrollToPosition(comments.size - 1)
+        }
+
+        viewModel.profileImages.observe(viewLifecycleOwner) { images ->
+            adapter.updateProfileImages(images)
         }
 
         viewModel.loadComments(postId)
@@ -56,12 +61,14 @@ class CommentsBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onDismiss(dialog: android.content.DialogInterface) {
-        val count = viewModel.commentCount.value ?: 0
-        parentFragmentManager.setFragmentResult(
-            "comment_count_changed",
-            bundleOf("postId" to postId, "commentCount" to count)
-        )
+    override fun onDismiss(dialog: DialogInterface) {
+        if (::viewModel.isInitialized) {
+            val count = viewModel.commentCount.value ?: 0
+            parentFragmentManager.setFragmentResult(
+                "comment_count_changed",
+                bundleOf("postId" to postId, "commentCount" to count)
+            )
+        }
         super.onDismiss(dialog)
     }
 

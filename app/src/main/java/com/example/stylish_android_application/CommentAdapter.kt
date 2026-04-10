@@ -7,15 +7,14 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.stylish_android_application.databinding.ItemCommentBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class CommentAdapter(
     private var comments: List<Comment>,
     private val onDeleteClicked: (Comment) -> Unit
 ) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-    private val profileImageCache = HashMap<String, String?>()
+    private val currentUserId get() = FirebaseAuth.getInstance().currentUser?.uid
+    private var profileImages: Map<String, String?> = emptyMap()
 
     class CommentViewHolder(val binding: ItemCommentBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -44,34 +43,16 @@ class CommentAdapter(
             holder.itemView.setOnLongClickListener(null)
         }
 
+        // Profile image — no Firestore, use pre-loaded map
         holder.binding.imgCommentProfile.setImageResource(R.drawable.img_profile)
-        holder.binding.imgCommentProfile.tag = comment.userId
-
-        val cached = profileImageCache[comment.userId]
-        if (profileImageCache.containsKey(comment.userId)) {
-            if (!cached.isNullOrEmpty()) {
-                Glide.with(holder.itemView.context)
-                    .load(cached)
-                    .circleCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .placeholder(R.drawable.img_profile)
-                    .into(holder.binding.imgCommentProfile)
-            }
-        } else {
-            FirebaseFirestore.getInstance().collection("users").document(comment.userId)
-                .get()
-                .addOnSuccessListener { doc ->
-                    val url = doc.getString("profileImageUrl")
-                    profileImageCache[comment.userId] = url
-                    if (!url.isNullOrEmpty() && holder.binding.imgCommentProfile.tag == comment.userId) {
-                        Glide.with(holder.itemView.context)
-                            .load(url)
-                            .circleCrop()
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .placeholder(R.drawable.img_profile)
-                            .into(holder.binding.imgCommentProfile)
-                    }
-                }
+        val imageUrl = profileImages[comment.userId]
+        if (!imageUrl.isNullOrEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(imageUrl)
+                .circleCrop()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .placeholder(R.drawable.img_profile)
+                .into(holder.binding.imgCommentProfile)
         }
     }
 
@@ -79,6 +60,11 @@ class CommentAdapter(
 
     fun updateComments(newComments: List<Comment>) {
         comments = newComments
+        notifyDataSetChanged()
+    }
+
+    fun updateProfileImages(images: Map<String, String?>) {
+        profileImages = images
         notifyDataSetChanged()
     }
 }

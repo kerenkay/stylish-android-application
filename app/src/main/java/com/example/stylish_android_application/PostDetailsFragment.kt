@@ -1,27 +1,27 @@
 package com.example.stylish_android_application
 
-import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.stylish_android_application.databinding.FragmentPostDetailsBinding
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.stylish_android_application.databinding.FragmentPostDetailsBinding
+import com.example.stylish_android_application.viewmodel.PostDetailsState
+import com.example.stylish_android_application.viewmodel.PostDetailsViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 class PostDetailsFragment : Fragment() {
 
     private var _binding: FragmentPostDetailsBinding? = null
     private val binding get() = _binding!!
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+    private val currentUserId get() = FirebaseAuth.getInstance().currentUser?.uid
 
     private var currentPost: Post? = null
+    private lateinit var viewModel: PostDetailsViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentPostDetailsBinding.inflate(inflater, container, false)
@@ -30,6 +30,8 @@ class PostDetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel = ViewModelProvider(this)[PostDetailsViewModel::class.java]
 
         currentPost = arguments?.getSerializable("post") as? Post
         currentPost?.let { render(it) }
@@ -42,6 +44,34 @@ class PostDetailsFragment : Fragment() {
             }
         }
 
+        viewModel.authorProfile.observe(viewLifecycleOwner) { profile ->
+            if (!profile.username.isNullOrEmpty()) {
+                binding.fullPostCard.lblUser.text = profile.username
+            }
+            if (!profile.imageUrl.isNullOrEmpty()) {
+                Glide.with(this)
+                    .load(profile.imageUrl)
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.img_profile)
+                    .into(binding.fullPostCard.imgProfile)
+            }
+        }
+
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is PostDetailsState.Deleted -> {
+                    Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show()
+                    parentFragmentManager.popBackStack()
+                }
+                is PostDetailsState.Error -> {
+                    Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                    viewModel.resetState()
+                }
+                else -> {}
+            }
+        }
+
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
@@ -51,7 +81,6 @@ class PostDetailsFragment : Fragment() {
             val bundle = Bundle()
             bundle.putString("USER_ID", currentPost?.userId)
             profileFragment.arguments = bundle
-
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, profileFragment)
                 .addToBackStack(null)
@@ -82,30 +111,13 @@ class PostDetailsFragment : Fragment() {
     }
 
     private fun setupUI(post: Post) {
-
         val card = binding.fullPostCard
         card.lblUser.text = post.userName
         card.lblLikeCount.text = post.likedBy.size.toString()
         card.lblCommentCount.text = post.commentCount.toString()
-
-        // Load poster's profile image and latest username from Firestore
         card.imgProfile.setImageResource(R.drawable.img_profile)
-        FirebaseFirestore.getInstance().collection("users").document(post.userId)
-            .get()
-            .addOnSuccessListener { doc ->
-                if (!isAdded) return@addOnSuccessListener
-                val username = doc.getString("username")
-                if (!username.isNullOrEmpty()) card.lblUser.text = username
-                val url = doc.getString("profileImageUrl")
-                if (!url.isNullOrEmpty()) {
-                    Glide.with(requireContext())
-                        .load(url)
-                        .circleCrop()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .placeholder(R.drawable.img_profile)
-                        .into(card.imgProfile)
-                }
-            }
+
+        viewModel.loadAuthorProfile(post.userId)
 
         if (post.description.isEmpty()) {
             card.lblDescription.visibility = View.GONE
@@ -124,12 +136,10 @@ class PostDetailsFragment : Fragment() {
         setupBrandDetailView(post.brandAccessories, card.layoutAccessories, card.lblAccessories)
         setupBrandDetailView(post.occasion, card.layoutTarget, card.lbTarget)
 
-        // --- טעינת התמונה המהירה דרך Glide ---
         if (post.imageUrl.isNotEmpty()) {
             Glide.with(requireContext())
                 .load(post.imageUrl)
-                // השורה החדשה: אומרת ל-Glide להשתמש בתמונה שכבר קיימת בזיכרון!
-                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.img_outfit)
                 .into(card.imgMain)
         } else {
@@ -137,7 +147,6 @@ class PostDetailsFragment : Fragment() {
         }
     }
 
-    // --- לוגיקה לעריכת פוסט ---
     private fun setupEditButton(post: Post) {
         if (currentUserId == post.userId) {
             binding.btnEdit.visibility = View.VISIBLE
@@ -156,67 +165,30 @@ class PostDetailsFragment : Fragment() {
         }
     }
 
-    // --- לוגיקה למחיקת פוסט ---
     private fun setupDeleteButton(post: Post) {
-        // 1. בדיקה: האם הפוסט שייך למשתמש המחובר?
         if (currentUserId == post.userId) {
             binding.btnDelete.visibility = View.VISIBLE
             binding.btnDelete.setOnClickListener {
-                showDeleteConfirmationDialog(post)
+                showConfirmDialog(
+                    context = requireContext(),
+                    title = "Delete Post",
+                    message = "Are you sure you want to delete this post?",
+                    positiveLabel = "Delete",
+                    onConfirm = { viewModel.deletePost(post) }
+                )
             }
         } else {
-            // אם זה לא הפוסט שלי - להסתיר את הפח
             binding.btnDelete.visibility = View.GONE
         }
     }
 
-    private fun showDeleteConfirmationDialog(post: Post) {
-        showConfirmDialog(
-            context = requireContext(),
-            title = "Delete Post",
-            message = "Are you sure you want to delete this post?",
-            positiveLabel = "Delete",
-            onConfirm = { deletePostFromFirestore(post) }
-        )
-    }
-
-    private fun deletePostFromFirestore(post: Post) {
-        FirebaseFirestore.getInstance().collection("posts")
-            .document(post.id)
-            .delete()
-            .addOnSuccessListener {
-                Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show()
-                parentFragmentManager.popBackStack() // חזרה למסך הקודם
-            }
-            .addOnFailureListener {
-                Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
-            }
-    }
-
-    // --- לוגיקה ללייקים ---
     private fun setupLikeButton(post: Post) {
-        // עדכון ראשוני של מצב הלב
         updateLikeIcon(post)
-
-        // טיפול בלחיצה על הלב
         binding.fullPostCard.btnLike.setOnClickListener {
-            if (currentUserId == null) return@setOnClickListener
-
-            val db = FirebaseFirestore.getInstance()
-            val postRef = db.collection("posts").document(post.id)
-            val isLiked = post.likedBy.contains(currentUserId)
-
-            if (isLiked) {
-                // ביטול לייק
-                post.likedBy.remove(currentUserId) // עדכון מקומי מהיר
-                postRef.update("likedBy", FieldValue.arrayRemove(currentUserId))
-            } else {
-                // הוספת לייק
-                post.likedBy.add(currentUserId!!) // עדכון מקומי מהיר
-                postRef.update("likedBy", FieldValue.arrayUnion(currentUserId))
-            }
-
-            // עדכון התצוגה (אייקון ומספר)
+            val uid = currentUserId ?: return@setOnClickListener
+            val isLiked = post.likedBy.contains(uid)
+            if (isLiked) post.likedBy.remove(uid) else post.likedBy.add(uid)
+            viewModel.toggleLike(post)
             updateLikeIcon(post)
             binding.fullPostCard.lblLikeCount.text = post.likedBy.size.toString()
         }
@@ -225,17 +197,12 @@ class PostDetailsFragment : Fragment() {
     private fun updateLikeIcon(post: Post) {
         val isLiked = post.likedBy.contains(currentUserId)
         if (isLiked) {
-            binding.fullPostCard.btnLike.setIconResource(R.drawable.ic_heart_full) // לב מלא
-            binding.fullPostCard.btnLike.setIconTintResource(R.color.red) // אדום
+            binding.fullPostCard.btnLike.setIconResource(R.drawable.ic_heart_full)
+            binding.fullPostCard.btnLike.setIconTintResource(R.color.red)
         } else {
-            binding.fullPostCard.btnLike.setIconResource(R.drawable.ic_heart) // לב ריק
-            binding.fullPostCard.btnLike.setIconTintResource(android.R.color.black) // שחור
+            binding.fullPostCard.btnLike.setIconResource(R.drawable.ic_heart)
+            binding.fullPostCard.btnLike.setIconTintResource(android.R.color.black)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun setupBrandDetailView(brandInput: String, container: View, textView: android.widget.TextView) {
@@ -254,5 +221,10 @@ class PostDetailsFragment : Fragment() {
                 container.setOnClickListener(null)
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

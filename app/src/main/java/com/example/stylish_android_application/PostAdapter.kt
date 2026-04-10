@@ -1,7 +1,5 @@
 package com.example.stylish_android_application
 
-import android.graphics.BitmapFactory
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +8,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.stylish_android_application.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class PostsAdapter(
     private var posts: List<Post>,
@@ -19,16 +16,14 @@ class PostsAdapter(
     private val onCommentClicked: (Post) -> Unit = {}
 ) : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
 
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-    // Cache: userId → profileImageUrl (null means "fetched but no image")
-    private val profileImageCache = HashMap<String, String?>()
+    // Always read fresh from FirebaseAuth so it's never stale after re-login
+    private val currentUserId get() = FirebaseAuth.getInstance().currentUser?.uid
 
-    // --- שינוי 1: ה-ViewHolder מקבל עכשיו את ה-Binding במקום View רגיל ---
-    // שימי לב שמחקנו מפה את כל ה-findViewById!
+    private var profileImages: Map<String, String?> = emptyMap()
+
     class PostViewHolder(val binding: ItemPostBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        // --- שינוי 2: מנפחים את ה-Binding במקום ליצור View ---
         val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return PostViewHolder(binding)
     }
@@ -41,40 +36,20 @@ class PostsAdapter(
         holder.binding.lblCommentCount.text = post.commentCount.toString()
         holder.binding.btnComment.setOnClickListener { onCommentClicked(post) }
 
-        // Profile image: reset to default, then load from cache or Firestore
+        // Profile image — no Firestore, use pre-loaded map
         holder.binding.imgProfile.setImageResource(R.drawable.img_profile)
-        holder.binding.imgProfile.tag = post.userId
-
-        if (profileImageCache.containsKey(post.userId)) {
-            val url = profileImageCache[post.userId]
-            if (!url.isNullOrEmpty()) {
-                Glide.with(holder.itemView.context)
-                    .load(url)
-                    .circleCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .placeholder(R.drawable.img_profile)
-                    .into(holder.binding.imgProfile)
-            }
-        } else {
-            FirebaseFirestore.getInstance().collection("users").document(post.userId)
-                .get()
-                .addOnSuccessListener { doc ->
-                    val url = doc.getString("profileImageUrl")
-                    profileImageCache[post.userId] = url
-                    if (!url.isNullOrEmpty() && holder.binding.imgProfile.tag == post.userId) {
-                        Glide.with(holder.itemView.context)
-                            .load(url)
-                            .circleCrop()
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .placeholder(R.drawable.img_profile)
-                            .into(holder.binding.imgProfile)
-                    }
-                }
+        val imageUrl = profileImages[post.userId]
+        if (!imageUrl.isNullOrEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(imageUrl)
+                .circleCrop()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .placeholder(R.drawable.img_profile)
+                .into(holder.binding.imgProfile)
         }
 
-        holder.binding.imgProfile.setOnClickListener {
-            onUserClicked(post.userId)
-        }
+        holder.binding.imgProfile.setOnClickListener { onUserClicked(post.userId) }
+        holder.binding.lblUser.setOnClickListener { onUserClicked(post.userId) }
 
         if (post.description.isEmpty()) {
             holder.binding.lblDescription.visibility = View.GONE
@@ -94,13 +69,11 @@ class PostsAdapter(
         setupBrandView(ctx, post.brandAccessories, holder.binding.layoutAccessories, holder.binding.lblAccessories)
         setupBrandView(ctx, post.occasion, holder.binding.layoutTarget, holder.binding.lbTarget)
 
-        // --- תמונה ---
-        // --- תמונה מהירה דרך Glide ---
         if (post.imageUrl.isNotEmpty()) {
             Glide.with(holder.itemView.context)
                 .load(post.imageUrl)
                 .thumbnail(0.1f)
-                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.img_outfit)
                 .into(holder.binding.imgMain)
         } else {
@@ -119,31 +92,20 @@ class PostsAdapter(
         holder.binding.btnLike.setOnClickListener {
             if (currentUserId == null) return@setOnClickListener
             onLikeClicked(post)
-            val isLikedByMe = post.likedBy.contains(currentUserId)
-            val updatedLikedBy = post.likedBy.toMutableList()
-
-            if (isLikedByMe) {
-                updatedLikedBy.remove(currentUserId)
+            val liked = post.likedBy.contains(currentUserId)
+            val updated = post.likedBy.toMutableList()
+            if (liked) {
+                updated.remove(currentUserId)
                 holder.binding.btnLike.setIconResource(R.drawable.ic_heart)
                 holder.binding.btnLike.setIconTintResource(android.R.color.black)
             } else {
-                updatedLikedBy.add(currentUserId)
+                updated.add(currentUserId!!)
                 holder.binding.btnLike.setIconResource(R.drawable.ic_heart_full)
-                holder.binding.btnLike.setIconTintResource(R.color.red) // ודאי שיש לך צבע כזה ב-res/values/colors.xml
+                holder.binding.btnLike.setIconTintResource(R.color.red)
             }
-
-            post.likedBy = updatedLikedBy as ArrayList<String>
+            post.likedBy = updated as ArrayList<String>
             holder.binding.lblLikeCount.text = post.likedBy.size.toString()
         }
-
-//        holder.itemView.setOnClickListener {
-//            onPostClicked(post)
-//        }
-
-        holder.binding.lblUser.setOnClickListener {
-            onUserClicked(post.userId)
-        }
-
     }
 
     override fun getItemCount() = posts.size
@@ -155,6 +117,11 @@ class PostsAdapter(
 
     fun updatePosts(newPosts: List<Post>) {
         posts = newPosts
+        notifyDataSetChanged()
+    }
+
+    fun updateProfileImages(images: Map<String, String?>) {
+        profileImages = images
         notifyDataSetChanged()
     }
 

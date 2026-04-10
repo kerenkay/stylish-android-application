@@ -33,7 +33,7 @@ class SearchFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupSearchListener()
-        setupBackButtonLogic() // הגדרת כפתור החזור
+        setupBackButtonLogic()
 
         val searchEditText = binding.searchView.findViewById<android.widget.EditText>(androidx.appcompat.R.id.search_src_text)
         searchEditText.textSize = 12f
@@ -56,7 +56,6 @@ class SearchFragment : Fragment() {
 
     private fun setupRecyclerView() {
         binding.rvSearchResults.layoutManager = GridLayoutManager(context, 3)
-        // משתמשים בפונקציה updatePosts שיש לנו באדפטר
         adapter = ProfileAdapter(emptyList()) { post ->
             val fragment = PostDetailsFragment()
             val bundle = Bundle()
@@ -98,12 +97,10 @@ class SearchFragment : Fragment() {
             override fun handleOnBackPressed() {
                 val currentQuery = binding.searchView.query.toString()
 
-                // אם המשתמש הקליד משהו, לחיצה על חזור רק תנקה את החיפוש ותחזיר את כל הפוסטים!
                 if (currentQuery.isNotEmpty()) {
                     binding.searchView.setQuery("", false)
                     binding.searchView.clearFocus()
                 } else {
-                    // אם שורת החיפוש ריקה, נבטל את היירוט וניתן למערכת לחזור לפיד
                     isEnabled = false
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }

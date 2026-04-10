@@ -3,17 +3,23 @@ package com.example.stylish_android_application.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.stylish_android_application.Post
+import com.example.stylish_android_application.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
 
 class FeedViewModel : ViewModel() {
 
     private val _postsList = MutableLiveData<List<Post>>()
     val postsList: LiveData<List<Post>> = _postsList
+
+    private val _profileImages = MutableLiveData<Map<String, String?>>()
+    val profileImages: LiveData<Map<String, String?>> = _profileImages
 
     // הרשימה המצטברת של הפוסטים בזיכרון
     private val currentPosts = mutableListOf<Post>()
@@ -78,6 +84,7 @@ class FeedViewModel : ViewModel() {
                     } else {
                         currentPosts.addAll(newPosts)
                         _postsList.value = ArrayList(currentPosts)
+                        loadProfileImages(newPosts)
                         isFetching = false
                     }
                 } else {
@@ -124,6 +131,7 @@ class FeedViewModel : ViewModel() {
                     } else {
                         currentPosts.addAll(newPosts)
                         _postsList.value = ArrayList(currentPosts)
+                        loadProfileImages(newPosts)
                         isFetching = false
                     }
                 } else {
@@ -143,6 +151,19 @@ class FeedViewModel : ViewModel() {
         currentPosts.clear()
         _postsList.value = emptyList()
         loadFollowingListAndPosts()
+    }
+
+    private fun loadProfileImages(posts: List<Post>) {
+        val knownIds = _profileImages.value?.keys ?: emptySet()
+        val newIds = posts.map { it.userId }.distinct().filter { it !in knownIds }
+        if (newIds.isEmpty()) return
+        viewModelScope.launch {
+            val current = _profileImages.value?.toMutableMap() ?: mutableMapOf()
+            for (userId in newIds) {
+                current[userId] = UserRepository.getUser(userId).imageUrl
+            }
+            _profileImages.postValue(current)
+        }
     }
 
     fun updateCommentCount(postId: String, newCount: Long) {

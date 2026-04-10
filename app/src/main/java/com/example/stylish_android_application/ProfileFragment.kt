@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide
 import com.example.stylish_android_application.databinding.DialogEditUsernameBinding
 import com.example.stylish_android_application.databinding.FragmentProfileBinding
 import com.example.stylish_android_application.utils.ImageUtils
+import com.example.stylish_android_application.viewmodel.EditProfileViewModel
 import com.example.stylish_android_application.viewmodel.ProfileViewModel
 import com.example.stylish_android_application.viewmodel.UploadState
 import com.example.stylish_android_application.viewmodel.UsernameUpdateState
@@ -33,8 +34,8 @@ class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    // 1. Declare the ViewModel
     private lateinit var viewModel: ProfileViewModel
+    private lateinit var editViewModel: EditProfileViewModel
     private lateinit var adapter: ProfileAdapter
     private var targetUserId: String = ""
 
@@ -53,8 +54,8 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 2. Initialize the ViewModel
         viewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
+        editViewModel = ViewModelProvider(this)[EditProfileViewModel::class.java]
 
         // Determine which user profile to show
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -177,18 +178,18 @@ class ProfileFragment : Fragment() {
         }
 
         // Observe Upload State for profile image updates
-        viewModel.uploadState.observe(viewLifecycleOwner) { state ->
+        editViewModel.uploadState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UploadState.Loading -> {
                     Toast.makeText(context, "Uploading image...", Toast.LENGTH_SHORT).show()
                 }
                 is UploadState.Success -> {
                     Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
-                    viewModel.resetUploadState()
+                    editViewModel.resetUploadState()
                 }
                 is UploadState.Error -> {
                     Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_SHORT).show()
-                    viewModel.resetUploadState()
+                    editViewModel.resetUploadState()
                 }
                 is UploadState.Idle -> { /* Do nothing */ }
             }
@@ -202,16 +203,14 @@ class ProfileFragment : Fragment() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         // Process image off the main thread to prevent UI freezing
-        lifecycleScope.launch(Dispatchers.Default) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
             val imagePair = ImageUtils.processProfileImage(requireContext(), uri)
 
             withContext(Dispatchers.Main) {
                 if (imagePair != null) {
                     val (bitmap, imageBytes) = imagePair
-                    // Show immediate local feedback to the user
                     binding.imgProfile.setImageBitmap(bitmap)
-                    // Tell ViewModel to handle the actual upload
-                    viewModel.uploadProfileImage(uid, imageBytes)
+                    editViewModel.uploadProfileImage(uid, imageBytes)
                 } else {
                     Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()
                 }
@@ -277,24 +276,24 @@ class ProfileFragment : Fragment() {
                     dialogBinding.btnSaveUsername.isEnabled = true
                     dialogBinding.btnSaveUsername.text = "Save"
                     dialogBinding.layoutUsername.error = state.message
-                    viewModel.resetUsernameUpdateState()
+                    editViewModel.resetUsernameUpdateState()
                 }
                 is UsernameUpdateState.Success -> {
                     Toast.makeText(context, "Username updated!", Toast.LENGTH_SHORT).show()
-                    viewModel.resetUsernameUpdateState()
+                    editViewModel.resetUsernameUpdateState()
                     dialog.dismiss()
                 }
                 else -> { }
             }
         }
-        viewModel.usernameUpdateState.observe(viewLifecycleOwner, loadingObserver)
+        editViewModel.usernameUpdateState.observe(viewLifecycleOwner, loadingObserver)
         dialog.setOnDismissListener {
-            viewModel.usernameUpdateState.removeObserver(loadingObserver)
+            editViewModel.usernameUpdateState.removeObserver(loadingObserver)
         }
 
         dialogBinding.btnSaveUsername.setOnClickListener {
             val newName = dialogBinding.etNewUsername.text.toString()
-            viewModel.updateUsername(uid, newName)
+            editViewModel.updateUsername(uid, newName)
         }
         dialogBinding.btnCancelUsername.setOnClickListener { dialog.dismiss() }
 

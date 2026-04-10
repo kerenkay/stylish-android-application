@@ -17,7 +17,6 @@ class FeedFragment : Fragment() {
 
     private lateinit var adapter: PostsAdapter
 
-    // 1. Declare the ViewModel
     private lateinit var viewModel: FeedViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -27,10 +26,7 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // 2. Initialize the ViewModel
         viewModel = ViewModelProvider(this)[FeedViewModel::class.java]
-
         setupRecyclerView()
         setupObservers()
     }
@@ -73,13 +69,11 @@ class FeedFragment : Fragment() {
             override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                // בודקים אם אנחנו גוללים למטה
                 if (dy > 0) {
                     val visibleItemCount = layoutManager.childCount
                     val totalItemCount = layoutManager.itemCount
                     val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
-                    // אם התקרבנו לסוף הרשימה (נשארו פחות מ-3 פוסטים לראות)
                     if (!viewModel.isLastPage && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3) {
                         viewModel.loadMorePosts()
                     }
@@ -95,10 +89,13 @@ class FeedFragment : Fragment() {
         }
     }
 
-    // 3. Listen to data changes from the ViewModel
+    //Listen to data changes from the ViewModel
     private fun setupObservers() {
         viewModel.postsList.observe(viewLifecycleOwner) { posts ->
-            adapter.updatePosts(posts) // Update the adapter efficiently
+            adapter.updatePosts(posts)
+        }
+        viewModel.profileImages.observe(viewLifecycleOwner) { images ->
+            adapter.updateProfileImages(images)
         }
     }
 

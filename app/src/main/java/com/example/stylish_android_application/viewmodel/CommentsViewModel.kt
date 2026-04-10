@@ -3,12 +3,15 @@ package com.example.stylish_android_application.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.stylish_android_application.Comment
+import com.example.stylish_android_application.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
 
 class CommentsViewModel : ViewModel() {
 
@@ -17,6 +20,9 @@ class CommentsViewModel : ViewModel() {
 
     private val _commentCount = MutableLiveData<Long>()
     val commentCount: LiveData<Long> = _commentCount
+
+    private val _profileImages = MutableLiveData<Map<String, String?>>()
+    val profileImages: LiveData<Map<String, String?>> = _profileImages
 
     private var commentsListener: ListenerRegistration? = null
 
@@ -33,7 +39,21 @@ class CommentsViewModel : ViewModel() {
                 }
                 _comments.value = list
                 _commentCount.value = list.size.toLong()
+                loadProfileImages(list)
             }
+    }
+
+    private fun loadProfileImages(comments: List<Comment>) {
+        val knownIds = _profileImages.value?.keys ?: emptySet()
+        val newIds = comments.map { it.userId }.distinct().filter { it !in knownIds }
+        if (newIds.isEmpty()) return
+        viewModelScope.launch {
+            val current = _profileImages.value?.toMutableMap() ?: mutableMapOf()
+            for (userId in newIds) {
+                current[userId] = UserRepository.getUser(userId).imageUrl
+            }
+            _profileImages.postValue(current)
+        }
     }
 
     fun addComment(postId: String, text: String) {
