@@ -3,15 +3,14 @@ package com.example.stylish_android_application.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.stylish_android_application.FolderItem
-import com.example.stylish_android_application.Post
+import com.example.stylish_android_application.adapter.FolderItem
+import com.example.stylish_android_application.model.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
 class LikesViewModel : ViewModel() {
 
-    // The single source of truth for the UI - a ready-to-use list of folders!
     private val _folders = MutableLiveData<List<FolderItem>>()
     val folders: LiveData<List<FolderItem>> = _folders
     var openedFolderName: String? = null
@@ -19,7 +18,6 @@ class LikesViewModel : ViewModel() {
     private var snapshotListener: ListenerRegistration? = null
 
     init {
-        // Start loading the saved posts as soon as the ViewModel is created
         loadLikedPosts()
     }
 
@@ -40,8 +38,6 @@ class LikesViewModel : ViewModel() {
                         allLikedPosts.add(post)
                     }
                 }
-
-                // Once we have the posts, group them into folders
                 groupPostsIntoFolders(allLikedPosts)
             }
     }
@@ -50,27 +46,26 @@ class LikesViewModel : ViewModel() {
         val newFolders = mutableListOf<FolderItem>()
 
         if (allLikedPosts.isNotEmpty()) {
-            // 1. Create the master "All Saved" folder
+            // Create the master "All Saved" folder
             newFolders.add(FolderItem("All Saved", allLikedPosts))
 
-            // 2. Group the rest by occasion
+            // Group the rest by occasion
             val groupedByOccasion = allLikedPosts.groupBy { it.occasion }
 
             for ((occasion, posts) in groupedByOccasion) {
                 if (occasion.isNotEmpty()) {
-                    // Capitalize the first letter for aesthetics
                     val formattedName = occasion.replaceFirstChar { it.uppercase() }
                     newFolders.add(FolderItem(formattedName, posts))
                 }
             }
         }
 
-        // Update the LiveData!
+        // Update the LiveData
         _folders.value = newFolders
     }
 
     override fun onCleared() {
         super.onCleared()
-        snapshotListener?.remove() // Prevent memory leaks
+        snapshotListener?.remove()
     }
 }

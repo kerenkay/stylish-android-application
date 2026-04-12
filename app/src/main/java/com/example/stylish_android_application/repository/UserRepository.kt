@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -24,7 +24,6 @@ object UserRepository {
         }
     }
 
-    /** Called by ProfileViewModel's snapshot listener to keep cache fresh. */
     fun updateCache(userId: String, username: String? = null, imageUrl: String? = null) {
         val existing = cache[userId] ?: UserProfile()
         cache[userId] = existing.copy(

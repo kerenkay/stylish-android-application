@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,6 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.stylish_android_application.ui.ProfileFragment
+import com.example.stylish_android_application.R
+import com.example.stylish_android_application.adapter.PostsAdapter
 import com.example.stylish_android_application.databinding.FragmentFeedBinding
 import com.example.stylish_android_application.viewmodel.FeedViewModel
 
@@ -33,13 +37,11 @@ class FeedFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = PostsAdapter(
-            posts = emptyList(), // Start with an empty list, ViewModel will fill it!
+            posts = emptyList(),
             onLikeClicked = { post ->
-                // Delegate business logic to ViewModel
                 viewModel.toggleLike(post)
             },
             onUserClicked = { userId ->
-                // Handle UI navigation inside the Fragment
                 val profileFragment = ProfileFragment()
                 val bundle = Bundle()
                 bundle.putString("USER_ID", userId)
@@ -65,8 +67,8 @@ class FeedFragment : Fragment() {
         binding.rvPosts.layoutManager = LinearLayoutManager(context)
         binding.rvPosts.adapter = adapter
 
-        binding.rvPosts.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+        binding.rvPosts.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
                 if (dy > 0) {

@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
 import android.content.DialogInterface
 import android.os.Bundle
@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.stylish_android_application.R
+import com.example.stylish_android_application.adapter.CommentAdapter
 import com.example.stylish_android_application.databinding.FragmentCommentsBottomSheetBinding
 import com.example.stylish_android_application.viewmodel.CommentsViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment

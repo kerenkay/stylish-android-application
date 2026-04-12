@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.adapter
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.stylish_android_application.R
 import com.example.stylish_android_application.databinding.ItemUserBinding
 import com.example.stylish_android_application.viewmodel.FollowListViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -43,7 +44,6 @@ class UserAdapter(
             binding.imgUserAvatar.setImageResource(R.drawable.img_profile)
         }
 
-        // Hide follow button for the current user's own row
         if (user.id == currentUserId) {
             binding.btnFollow.visibility = View.GONE
         } else {

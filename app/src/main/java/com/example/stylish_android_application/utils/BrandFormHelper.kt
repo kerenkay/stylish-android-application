@@ -1,5 +1,6 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.utils
 
+import android.R
 import android.app.Dialog
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -12,16 +13,10 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.stylish_android_application.utils.BrandHelper
 import com.example.stylish_android_application.databinding.DialogBrandLinkBinding
 import com.google.android.material.textfield.TextInputLayout
 
-/**
- * Delegate that holds all shared brand-link UI logic for post forms.
- *
- * @param fragment      the host fragment (used for context/resources inside method bodies)
- * @param emptyFieldMeansBlank  true for EditPost — clearing a field returns "" (removes brand);
- *                              false for AddPost — an empty field with a stored URL returns the URL
- */
 class BrandFormHelper(
     private val fragment: Fragment,
     private val emptyFieldMeansBlank: Boolean = false
@@ -42,7 +37,7 @@ class BrandFormHelper(
     fun setupBrandAutocomplete(vararg fields: AutoCompleteTextView) {
         val adapter = ArrayAdapter(
             fragment.requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
+            R.layout.simple_dropdown_item_1line,
             brandSuggestions
         )
         fields.forEach { it.setAdapter(adapter) }
@@ -51,7 +46,7 @@ class BrandFormHelper(
     fun setupBrandLinkIcons(fields: List<Pair<AutoCompleteTextView, TextInputLayout>>) {
         for ((field, layout) in fields) {
             layout.endIconMode = TextInputLayout.END_ICON_CUSTOM
-            layout.setEndIconDrawable(R.drawable.ic_link)
+            layout.setEndIconDrawable(com.example.stylish_android_application.R.drawable.ic_link)
             updateLinkIconTint(field, layout)
             layout.setEndIconOnClickListener { showLinkDialog(field, layout) }
         }

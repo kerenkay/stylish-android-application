@@ -1,15 +1,20 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.core.view.marginStart
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.stylish_android_application.ui.PostDetailsFragment
+import com.example.stylish_android_application.R
+import com.example.stylish_android_application.adapter.FolderItem
+import com.example.stylish_android_application.adapter.FoldersAdapter
+import com.example.stylish_android_application.adapter.ProfileAdapter
 import com.example.stylish_android_application.databinding.FragmentLikesBinding
 import com.example.stylish_android_application.viewmodel.LikesViewModel
 
@@ -35,7 +40,7 @@ class LikesFragment : Fragment() {
         setupAdapters()
         setupBackButton()
         setupObservers()
-        setupBackButtonLogic() // הגדרת יירוט כפתור החזור הפיזי
+        setupBackButtonLogic()
     }
 
     private fun setupAdapters() {
@@ -53,13 +58,12 @@ class LikesFragment : Fragment() {
             fragment.arguments = bundle
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null) // מאפשר לחזור בדיוק לפה!
+                .addToBackStack(null)
                 .commit()
         }
         binding.rvLikedPosts.adapter = postsAdapter
     }
 
-    // הקסם קורה פה: מאזינים לנתונים ומציירים את המסך בהתאם לזיכרון!
     private fun setupObservers() {
         viewModel.folders.observe(viewLifecycleOwner) { folders ->
             if (folders.isEmpty()) {
@@ -71,40 +75,33 @@ class LikesFragment : Fragment() {
                 binding.tvNoLikes.visibility = View.GONE
                 foldersAdapter.updateFolders(folders)
 
-                // בדיקה: האם הייתה תיקייה פתוחה כשיצאנו מהמסך?
                 val openedName = viewModel.openedFolderName
                 if (openedName != null) {
-                    // מחפשים את התיקייה העדכנית לפי השם
                     val folderToOpen = folders.find { it.name == openedName }
                     if (folderToOpen != null) {
-                        openFolderUI(folderToOpen) // פותחים אותה שוב!
+                        openFolderUI(folderToOpen)
                     } else {
-                        // אם התיקייה נמחקה (כי הורדנו לייק לפוסט האחרון שבה) נסגור תצוגה
                         closeFolderUI()
                     }
                 } else {
-                    closeFolderUI() // מצב רגיל - מציגים את כל התיקיות
+                    closeFolderUI()
                 }
             }
         }
     }
 
     private fun setupBackButton() {
-        // כפתור החזור שעל המסך (למעלה שמאלה)
         binding.btnBack.setOnClickListener {
             closeFolderUI()
         }
     }
 
     private fun setupBackButtonLogic() {
-        // ניהול כפתור החזור *הפיזי* של המכשיר
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (viewModel.openedFolderName != null) {
-                    // אם אנחנו בתוך תיקייה - נסגור רק אותה
                     closeFolderUI()
                 } else {
-                    // אם אנחנו במסך התיקיות הראשי - ניתן למערכת לחזור לפיד הראשי
                     isEnabled = false
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
@@ -112,10 +109,9 @@ class LikesFragment : Fragment() {
         })
     }
 
-    // --- שינויי תצוגה (UI) בלבד ---
 
     private fun openFolderUI(folder: FolderItem) {
-        viewModel.openedFolderName = folder.name // שומרים בזיכרון של ה-ViewModel
+        viewModel.openedFolderName = folder.name
 
         binding.rvFolders.visibility = View.GONE
         binding.rvLikedPosts.visibility = View.VISIBLE
@@ -130,7 +126,7 @@ class LikesFragment : Fragment() {
     }
 
     private fun closeFolderUI() {
-        viewModel.openedFolderName = null // מוחקים מהזיכרון
+        viewModel.openedFolderName = null
 
         binding.rvLikedPosts.visibility = View.GONE
         binding.rvFolders.visibility = View.VISIBLE
@@ -142,7 +138,7 @@ class LikesFragment : Fragment() {
         }
     }
 
-    private fun Int.dpToPx(context: android.content.Context): Int {
+    private fun Int.dpToPx(context: Context): Int {
         return (this * context.resources.displayMetrics.density).toInt()
     }
 

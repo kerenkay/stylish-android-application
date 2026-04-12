@@ -8,7 +8,6 @@ import java.io.ByteArrayOutputStream
 
 object ImageUtils {
 
-    // הפונקציה מקבלת Uri מהגלריה, ומחזירה גם את התמונה (בשביל הג'מיני) וגם את הבתים המכווצים (בשביל פיירבייס)
     fun processImageForUpload(context: Context, uri: Uri): Pair<Bitmap, ByteArray>? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri)
@@ -17,7 +16,7 @@ object ImageUtils {
 
             if (bitmap == null) return null
 
-            // 1. הקטנת רזולוציה ל-1080p
+            // Scale down to 1080p
             val maxResolution = 1080
             if (bitmap.width > maxResolution || bitmap.height > maxResolution) {
                 val ratio = bitmap.width.toFloat() / bitmap.height.toFloat()
@@ -26,11 +25,11 @@ object ImageUtils {
                 bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
             }
 
-            // 2. דחיסת משקל (75% איכות)
+            // compress to 75%
             val baos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 75, baos)
 
-            // מחזירים צמד: התמונה המוכנה, והבתים להעלאה
+            // return the picture and num of bytes
             Pair(bitmap, baos.toByteArray())
         } catch (e: Exception) {
             e.printStackTrace()
@@ -47,7 +46,7 @@ object ImageUtils {
 
             if (originalBitmap == null) return null
 
-            // 1. Scale down to 1080p
+            // Scale down to 1080p
             val maxDimension = 1080
             var bitmap = originalBitmap
             if (bitmap.width > maxDimension || bitmap.height > maxDimension) {
@@ -57,7 +56,7 @@ object ImageUtils {
                 bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
             }
 
-            // 2. Fix rotation using EXIF data
+            // Fix rotation using EXIF data
             var rotatedBitmap = bitmap
             val exifInputStream = context.contentResolver.openInputStream(uri)
             if (exifInputStream != null) {
@@ -81,7 +80,7 @@ object ImageUtils {
                 exifInputStream.close()
             }
 
-            // 3. Compress to ByteArray for Firebase Storage
+            // Compress to ByteArray for Firebase Storage
             val baos = ByteArrayOutputStream()
             rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
 

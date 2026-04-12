@@ -1,15 +1,21 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
+import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.stylish_android_application.utils.BrandHelper
+import com.example.stylish_android_application.R
 import com.example.stylish_android_application.databinding.FragmentPostDetailsBinding
+import com.example.stylish_android_application.model.Post
+import com.example.stylish_android_application.utils.showConfirmDialog
 import com.example.stylish_android_application.viewmodel.PostDetailsState
 import com.example.stylish_android_application.viewmodel.PostDetailsViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -205,7 +211,7 @@ class PostDetailsFragment : Fragment() {
         }
     }
 
-    private fun setupBrandDetailView(brandInput: String, container: View, textView: android.widget.TextView) {
+    private fun setupBrandDetailView(brandInput: String, container: View, textView: TextView) {
         if (brandInput.isEmpty()) {
             container.visibility = View.GONE
             container.setOnClickListener(null)
@@ -213,11 +219,11 @@ class PostDetailsFragment : Fragment() {
             container.visibility = View.VISIBLE
             if (BrandHelper.isUrl(brandInput)) {
                 textView.text = BrandHelper.extractBrandName(brandInput)
-                textView.paintFlags = textView.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                textView.paintFlags = textView.paintFlags or Paint.UNDERLINE_TEXT_FLAG
                 container.setOnClickListener { BrandHelper.openUrl(requireContext(), brandInput) }
             } else {
                 textView.text = brandInput
-                textView.paintFlags = textView.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                textView.paintFlags = textView.paintFlags and Paint.UNDERLINE_TEXT_FLAG.inv()
                 container.setOnClickListener(null)
             }
         }

@@ -62,7 +62,6 @@ class FollowListViewModel : ViewModel() {
                                     val nameFromDoc = userDoc.getString("username") ?: ""
 
                                     if (nameFromDoc.isNotEmpty()) {
-                                        // User document has a username — use it directly
                                         results.add(UserItem(uid, nameFromDoc, imageUrl, isFollowing))
                                         remaining--
                                         if (remaining == 0) finalizeResults(results)

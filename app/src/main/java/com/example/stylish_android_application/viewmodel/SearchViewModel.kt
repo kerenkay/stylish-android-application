@@ -3,7 +3,7 @@ package com.example.stylish_android_application.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.stylish_android_application.Post
+import com.example.stylish_android_application.model.Post
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import java.util.Locale

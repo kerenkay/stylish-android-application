@@ -1,10 +1,12 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.model
+
 import java.io.Serializable
+
 data class Post(
     var id: String = "",
     val userId: String = "",
     val userName: String = "",
-    val imageUrl: String = "", // המחרוזת הארוכה של התמונה
+    val imageUrl: String = "",
     val description: String = "",
     val brandTop: String = "",
     val brandBottom: String = "",

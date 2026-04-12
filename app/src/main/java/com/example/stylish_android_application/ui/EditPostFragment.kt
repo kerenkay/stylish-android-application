@@ -1,5 +1,6 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
+import android.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,9 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.stylish_android_application.utils.BrandFormHelper
 import com.example.stylish_android_application.databinding.FragmentEditPostBinding
+import com.example.stylish_android_application.model.Post
 import com.example.stylish_android_application.viewmodel.EditPostViewModel
 import com.example.stylish_android_application.viewmodel.EditState
 
@@ -84,8 +87,9 @@ class EditPostFragment : Fragment() {
     }
 
     private fun setupSpinner() {
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, brandFormHelper.occasions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, brandFormHelper.occasions)
+        adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.spinnerOccasion.adapter = adapter
 
         binding.spinnerOccasion.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {

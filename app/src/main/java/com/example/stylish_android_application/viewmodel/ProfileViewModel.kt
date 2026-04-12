@@ -3,8 +3,8 @@ package com.example.stylish_android_application.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.stylish_android_application.Post
-import com.example.stylish_android_application.UserRepository
+import com.example.stylish_android_application.model.Post
+import com.example.stylish_android_application.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore

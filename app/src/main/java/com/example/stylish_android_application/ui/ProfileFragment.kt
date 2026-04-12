@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
 import android.app.Dialog
 import android.content.Intent
@@ -10,15 +10,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.stylish_android_application.R
+import com.example.stylish_android_application.adapter.ProfileAdapter
 import com.example.stylish_android_application.databinding.DialogEditUsernameBinding
 import com.example.stylish_android_application.databinding.FragmentProfileBinding
+import com.example.stylish_android_application.utils.showConfirmDialog
 import com.example.stylish_android_application.utils.ImageUtils
 import com.example.stylish_android_application.viewmodel.EditProfileViewModel
 import com.example.stylish_android_application.viewmodel.ProfileViewModel
@@ -39,7 +45,6 @@ class ProfileFragment : Fragment() {
     private lateinit var adapter: ProfileAdapter
     private var targetUserId: String = ""
 
-    // Launcher for picking an image from the gallery
     private val pickProfileImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             processAndUploadImage(uri)
@@ -67,12 +72,10 @@ class ProfileFragment : Fragment() {
         setupObservers()
         setupFollowListNavigation()
 
-        // 3. Tell the ViewModel to start fetching data!
         viewModel.loadUserProfile(targetUserId, isCurrentUser)
         viewModel.loadUserPosts(targetUserId)
     }
 
-    // --- UI Setup Methods ---
 
     private fun setupUI(targetUserId: String,isCurrentUser: Boolean) {
         if (isCurrentUser) {
@@ -107,7 +110,6 @@ class ProfileFragment : Fragment() {
 
     private fun setupRecyclerView() {
         binding.rvProfilePosts.layoutManager = GridLayoutManager(context, 3)
-        // Pass an empty list initially; the observer will update it
         adapter = ProfileAdapter(emptyList()) { post ->
             val fragment = PostDetailsFragment()
             val bundle = Bundle()
@@ -121,15 +123,12 @@ class ProfileFragment : Fragment() {
         binding.rvProfilePosts.adapter = adapter
     }
 
-    // --- Architecture Magic: Observing the ViewModel ---
 
     private fun setupObservers() {
-        // Observe User Name
         viewModel.userName.observe(viewLifecycleOwner) { name ->
             binding.tvUserName.text = name
         }
 
-        // Observe Profile Image URL
         viewModel.profileImageUrl.observe(viewLifecycleOwner) { imageUrl ->
             if (!imageUrl.isNullOrEmpty()) {
                 Glide.with(this)
@@ -138,28 +137,24 @@ class ProfileFragment : Fragment() {
                     .circleCrop()
                     .into(binding.imgProfile)
 
-                // Click opens the full screen image dialog
                 binding.imgProfile.setOnClickListener {
                     showFullImageDialog(imageUrl)
                 }
             } else {
-                binding.imgProfile.setImageResource(R.drawable.img_outfit) // Default profile image
+                binding.imgProfile.setImageResource(R.drawable.img_outfit)
                 binding.imgProfile.setOnClickListener(null)
             }
         }
 
-        // Observe User Posts
         viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
-            adapter.updatePosts(posts) // Make sure your ProfileAdapter has an 'updatePosts' method!
+            adapter.updatePosts(posts)
             binding.tvPostsCount.text = "${posts.size} \nPosts"
         }
 
-        // Observe Total Likes
         viewModel.totalLikes.observe(viewLifecycleOwner) { likes ->
             binding.tvTotalLikes.text = "$likes \nLikes"
         }
 
-        // Observe Followers
         viewModel.followersCount.observe(viewLifecycleOwner) { count ->
             binding.tvFollowers.text = "$count \nFollowers"
         }
@@ -197,8 +192,6 @@ class ProfileFragment : Fragment() {
 
     }
 
-    // --- Actions ---
-
     private fun processAndUploadImage(uri: Uri) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
@@ -218,21 +211,20 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // --- Dialogs ---
 
     private fun showFullImageDialog(imageUrl: String) {
-        val dialog = android.app.Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen)
-        val imageView = android.widget.ImageView(requireContext()).apply {
-            layoutParams = android.view.ViewGroup.LayoutParams(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        val dialog = Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        val imageView = ImageView(requireContext()).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
-            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            scaleType = ImageView.ScaleType.FIT_CENTER
         }
 
         Glide.with(this)
             .load(imageUrl)
-            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(imageView)
 
         dialog.setContentView(imageView)
@@ -265,7 +257,7 @@ class ProfileFragment : Fragment() {
             )
         }
 
-        val loadingObserver = androidx.lifecycle.Observer<UsernameUpdateState> { state ->
+        val loadingObserver = Observer<UsernameUpdateState> { state ->
             when (state) {
                 is UsernameUpdateState.Loading -> {
                     dialogBinding.btnSaveUsername.isEnabled = false

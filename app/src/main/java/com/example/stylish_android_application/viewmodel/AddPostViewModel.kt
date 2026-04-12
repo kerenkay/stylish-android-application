@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stylish_android_application.BuildConfig
-import com.example.stylish_android_application.Post
+import com.example.stylish_android_application.model.Post
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.firebase.auth.FirebaseAuth
@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
-// Represents the different states of the upload process to update the UI safely
 sealed class UploadState {
     object Idle : UploadState()
     object Loading : UploadState()
@@ -28,9 +27,7 @@ sealed class UploadState {
 
 class AddPostViewModel : ViewModel() {
 
-    // Mutable LiveData is used internally to update the state
     private val _uploadState = MutableLiveData<UploadState>(UploadState.Idle)
-    // Public LiveData is read-only for the Fragment to observe
     val uploadState: LiveData<UploadState> = _uploadState
 
     fun uploadPost(
@@ -64,7 +61,6 @@ class AddPostViewModel : ViewModel() {
                 val fileName = UUID.randomUUID().toString() + ".jpg"
                 val storageRef = FirebaseStorage.getInstance().reference.child("post_images/$fileName")
 
-                // Using await() converts the async callback into a clean, sequential line
                 storageRef.putBytes(imageBytes).await()
                 val imageUrl = storageRef.downloadUrl.await().toString()
 
@@ -94,12 +90,10 @@ class AddPostViewModel : ViewModel() {
                 // 4. Save the Post document to Firestore
                 FirebaseFirestore.getInstance().collection("posts").add(post).await()
 
-                // 5. Ensure user document has username stored (used by followers/following list)
                 FirebaseFirestore.getInstance().collection("users").document(currentUser.uid)
                     .set(hashMapOf("username" to userName), SetOptions.merge())
                     .await()
 
-                // Notify the Fragment that the upload is complete
                 _uploadState.postValue(UploadState.Success)
 
             } catch (e: Exception) {
@@ -135,7 +129,7 @@ class AddPostViewModel : ViewModel() {
                 else -> "Warm" // Default fallback
             }
         } catch (e: Exception) {
-            "Warm" // Default fallback if AI fails or times out
+            "Warm"
         }
     }
 

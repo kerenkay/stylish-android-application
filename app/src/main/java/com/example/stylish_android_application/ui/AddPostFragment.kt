@@ -1,5 +1,6 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
+import android.R
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,6 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
+import com.example.stylish_android_application.utils.BrandFormHelper
+import com.example.stylish_android_application.ui.FeedFragment
 import com.example.stylish_android_application.databinding.FragmentAddPostBinding
 import com.example.stylish_android_application.utils.ImageUtils
 import com.example.stylish_android_application.viewmodel.AddPostViewModel
@@ -97,8 +100,9 @@ class AddPostFragment : Fragment() {
     }
 
     private fun setupSpinner() {
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, brandFormHelper.occasions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, brandFormHelper.occasions)
+        adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.spinnerOccasion.adapter = adapter
 
         binding.spinnerOccasion.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -186,7 +190,10 @@ class AddPostFragment : Fragment() {
         } else {
             try {
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, FeedFragment())
+                    .replace(
+                        com.example.stylish_android_application.R.id.fragment_container,
+                        FeedFragment()
+                    )
                     .commit()
             } catch (e: Exception) { }
         }

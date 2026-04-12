@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
 import android.animation.Animator
 import android.content.Intent
@@ -11,12 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
+import com.example.stylish_android_application.R
 import com.example.stylish_android_application.databinding.ActivityLoginBinding
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
-
 
 class LoginActivity : AppCompatActivity() {
 
@@ -40,18 +40,6 @@ class LoginActivity : AppCompatActivity() {
         }
 
         showView(binding.imgIcon)
-//        checkUser()
-    }
-
-    fun showViewSlideDown(view: View) {
-        val displayMetrics = DisplayMetrics()
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics)
-        val height = displayMetrics.heightPixels
-        view.setY((-height / 2).toFloat())
-        view.setScaleX(0.0f)
-        view.setScaleY(0.0f)
-        view.animate().scaleY(1.0f).scaleX(1.0f).translationY(0f).setDuration(1400)
-            .setInterpolator(LinearOutSlowInInterpolator())
     }
 
     fun showView(view: View) {
@@ -93,7 +81,6 @@ class LoginActivity : AppCompatActivity() {
 
     private fun onSignInResult(res: FirebaseAuthUIAuthenticationResult) {
         if (res.resultCode == RESULT_OK) {
-            // is new user
 
         }
         checkUser()
@@ -113,7 +100,7 @@ class LoginActivity : AppCompatActivity() {
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
-            .setLogo(R.drawable.img_logo) // Set logo drawable
+            .setLogo(R.drawable.img_logo)
             .setTosAndPrivacyPolicyUrls(
                 "https://example.com/terms.html",
                 "https://example.com/privacy.html",

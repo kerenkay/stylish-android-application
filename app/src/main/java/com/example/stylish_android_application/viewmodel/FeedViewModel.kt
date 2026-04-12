@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.stylish_android_application.Post
-import com.example.stylish_android_application.UserRepository
+import com.example.stylish_android_application.model.Post
+import com.example.stylish_android_application.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -21,14 +21,12 @@ class FeedViewModel : ViewModel() {
     private val _profileImages = MutableLiveData<Map<String, String?>>()
     val profileImages: LiveData<Map<String, String?>> = _profileImages
 
-    // הרשימה המצטברת של הפוסטים בזיכרון
     private val currentPosts = mutableListOf<Post>()
 
-    // משתני ניהול Pagination
     private val PAGE_SIZE = 10L
     private var lastVisibleDocument: DocumentSnapshot? = null
-    private var isFetching = false // מונע קריאות כפולות אם המשתמש גולל מהר
-    var isLastPage = false // מסמן אם הגענו לסוף מסד הנתונים
+    private var isFetching = false // to prevent double calls
+    var isLastPage = false
         private set
     private var followingList = listOf<String>()
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -113,7 +111,6 @@ class FeedViewModel : ViewModel() {
                     for (document in snapshot.documents) {
                         val post = document.toObject(Post::class.java)
                         if (post != null) {
-                            // הסינון החכם חל גם על טעינת ההמשך בגלילה למטה
                             if (post.userId == currentUserId || followingList.contains(post.userId)) {
                                 post.id = document.id
                                 newPosts.add(post)
@@ -124,7 +121,6 @@ class FeedViewModel : ViewModel() {
                     lastVisibleDocument = snapshot.documents[snapshot.size() - 1]
                     if (snapshot.size() < PAGE_SIZE) isLastPage = true
 
-                    // דילוג אוטומטי במקרה של מנה ריקה
                     if (newPosts.isEmpty() && !isLastPage) {
                         isFetching = false
                         loadMorePosts()

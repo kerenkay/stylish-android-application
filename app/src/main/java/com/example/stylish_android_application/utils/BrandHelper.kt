@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.utils
 
 import android.content.ActivityNotFoundException
 import android.content.Context

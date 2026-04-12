@@ -1,14 +1,18 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.R
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.stylish_android_application.ui.WeatherFragment
+import com.example.stylish_android_application.adapter.ProfileAdapter
 import com.example.stylish_android_application.databinding.FragmentSearchBinding
 import com.example.stylish_android_application.viewmodel.SearchViewModel
 
@@ -35,13 +39,13 @@ class SearchFragment : Fragment() {
         setupSearchListener()
         setupBackButtonLogic()
 
-        val searchEditText = binding.searchView.findViewById<android.widget.EditText>(androidx.appcompat.R.id.search_src_text)
+        val searchEditText = binding.searchView.findViewById<EditText>(R.id.search_src_text)
         searchEditText.textSize = 12f
 
         binding.btnWeatherMatch.setOnClickListener {
             val weatherFragment = WeatherFragment()
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, weatherFragment)
+                .replace(com.example.stylish_android_application.R.id.fragment_container, weatherFragment)
                 .addToBackStack(null)
                 .commit()
         }
@@ -62,7 +66,7 @@ class SearchFragment : Fragment() {
             bundle.putSerializable("post", post)
             fragment.arguments = bundle
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
+                .replace(com.example.stylish_android_application.R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit()
         }

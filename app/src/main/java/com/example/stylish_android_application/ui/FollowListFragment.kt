@@ -1,4 +1,4 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +8,9 @@ import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.stylish_android_application.ui.ProfileFragment
+import com.example.stylish_android_application.R
+import com.example.stylish_android_application.adapter.UserAdapter
 import com.example.stylish_android_application.databinding.FragmentFollowListBinding
 import com.example.stylish_android_application.viewmodel.FollowListViewModel
 

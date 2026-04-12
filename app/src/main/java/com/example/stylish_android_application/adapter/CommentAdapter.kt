@@ -1,11 +1,14 @@
-package com.example.stylish_android_application
+package com.example.stylish_android_application.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.stylish_android_application.model.Comment
+import com.example.stylish_android_application.R
 import com.example.stylish_android_application.databinding.ItemCommentBinding
+import com.example.stylish_android_application.utils.showConfirmDialog
 import com.google.firebase.auth.FirebaseAuth
 
 class CommentAdapter(
@@ -43,7 +46,6 @@ class CommentAdapter(
             holder.itemView.setOnLongClickListener(null)
         }
 
-        // Profile image — no Firestore, use pre-loaded map
         holder.binding.imgCommentProfile.setImageResource(R.drawable.img_profile)
         val imageUrl = profileImages[comment.userId]
         if (!imageUrl.isNullOrEmpty()) {
