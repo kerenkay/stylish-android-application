@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/src/main/res/drawable/img_logo.png" alt="Monster Game Cover" width="150"/>
+  <img src="app/src/main/res/drawable/img_logo.png" alt="Stylish Logo" width="150"/>
 </p>
 
 # STYLISH - The Fashion Social Network
