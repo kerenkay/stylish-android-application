@@ -33,6 +33,7 @@ class FeedFragment : Fragment() {
         viewModel = ViewModelProvider(this)[FeedViewModel::class.java]
         setupRecyclerView()
         setupObservers()
+        binding.swipeRefresh.setOnRefreshListener { viewModel.refresh() }
     }
 
     private fun setupRecyclerView() {
@@ -98,6 +99,9 @@ class FeedFragment : Fragment() {
         }
         viewModel.profileImages.observe(viewLifecycleOwner) { images ->
             adapter.updateProfileImages(images)
+        }
+        viewModel.isRefreshing.observe(viewLifecycleOwner) { refreshing ->
+            binding.swipeRefresh.isRefreshing = refreshing
         }
     }
 

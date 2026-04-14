@@ -21,6 +21,9 @@ class FeedViewModel : ViewModel() {
     private val _profileImages = MutableLiveData<Map<String, String?>>()
     val profileImages: LiveData<Map<String, String?>> = _profileImages
 
+    private val _isRefreshing = MutableLiveData(false)
+    val isRefreshing: LiveData<Boolean> = _isRefreshing
+
     private val currentPosts = mutableListOf<Post>()
 
     private val PAGE_SIZE = 10L
@@ -54,6 +57,7 @@ class FeedViewModel : ViewModel() {
     fun loadInitialPosts() {
         if (isFetching || currentUserId == null) return
         isFetching = true
+        _isRefreshing.value = true
 
         FirebaseFirestore.getInstance().collection("posts")
             .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -78,20 +82,24 @@ class FeedViewModel : ViewModel() {
                     if (snapshot.size() < PAGE_SIZE) isLastPage = true
                     if (newPosts.isEmpty() && !isLastPage) {
                         isFetching = false
+                        _isRefreshing.value = false
                         loadMorePosts()
                     } else {
                         currentPosts.addAll(newPosts)
                         _postsList.value = ArrayList(currentPosts)
                         loadProfileImages(newPosts)
                         isFetching = false
+                        _isRefreshing.value = false
                     }
                 } else {
                     isLastPage = true
                     isFetching = false
+                    _isRefreshing.value = false
                 }
             }
             .addOnFailureListener {
                 isFetching = false
+                _isRefreshing.value = false
             }
     }
 
