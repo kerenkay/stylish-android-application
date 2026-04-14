@@ -185,18 +185,13 @@ class AddPostFragment : Fragment() {
     }
 
     private fun navigateToFeed() {
-        if (parentFragmentManager.backStackEntryCount > 0) {
-            parentFragmentManager.popBackStack()
-        } else {
-            try {
-                parentFragmentManager.beginTransaction()
-                    .replace(
-                        com.example.stylish_android_application.R.id.fragment_container,
-                        FeedFragment()
-                    )
-                    .commit()
-            } catch (e: Exception) { }
-        }
+        parentFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        parentFragmentManager.beginTransaction()
+            .replace(
+                com.example.stylish_android_application.R.id.fragment_container,
+                FeedFragment()
+            )
+            .commit()
     }
 
     override fun onDestroyView() {
