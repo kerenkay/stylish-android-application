@@ -192,9 +192,9 @@ class PostDetailsFragment : Fragment() {
         updateLikeIcon(post)
         binding.fullPostCard.btnLike.setOnClickListener {
             val uid = currentUserId ?: return@setOnClickListener
+            viewModel.toggleLike(post)
             val isLiked = post.likedBy.contains(uid)
             if (isLiked) post.likedBy.remove(uid) else post.likedBy.add(uid)
-            viewModel.toggleLike(post)
             updateLikeIcon(post)
             binding.fullPostCard.lblLikeCount.text = post.likedBy.size.toString()
         }
