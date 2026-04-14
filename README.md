@@ -4,7 +4,7 @@
 
 # STYLISH - The Fashion Social Network
 
-Stylish is a fashion-focused social media Android app. It allows users to share their daily outfits, discover styling inspiration, interact with a community, seamlessly shop for tagged items directly from the feed, and getting AI-powered outfit recommendations based on real-time weather.
+Stylish is a fashion-focused social media Android app. It allows users to share their daily outfits, discover styling inspiration, interact with a community, seamlessly shop for tagged items directly from the feed, and get AI-powered outfit recommendations based on real-time weather.
 
 ## ✨ Key Features
 
