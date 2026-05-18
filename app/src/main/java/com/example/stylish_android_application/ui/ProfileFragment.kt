@@ -1,0 +1,331 @@
+package com.example.stylish_android_application.ui
+
+import android.app.Dialog
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.net.Uri
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.stylish_android_application.R
+import com.example.stylish_android_application.adapter.ProfileAdapter
+import com.example.stylish_android_application.databinding.DialogEditUsernameBinding
+import com.example.stylish_android_application.databinding.FragmentProfileBinding
+import com.example.stylish_android_application.utils.showConfirmDialog
+import com.example.stylish_android_application.utils.ImageUtils
+import com.example.stylish_android_application.viewmodel.EditProfileViewModel
+import com.example.stylish_android_application.viewmodel.ProfileViewModel
+import com.example.stylish_android_application.viewmodel.UploadState
+import com.example.stylish_android_application.viewmodel.UsernameUpdateState
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class ProfileFragment : Fragment() {
+
+    private var _binding: FragmentProfileBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var viewModel: ProfileViewModel
+    private lateinit var editViewModel: EditProfileViewModel
+    private lateinit var adapter: ProfileAdapter
+    private var targetUserId: String = ""
+
+    private val pickProfileImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            processAndUploadImage(uri)
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
+        editViewModel = ViewModelProvider(this)[EditProfileViewModel::class.java]
+
+        // Determine which user profile to show
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+        targetUserId = arguments?.getString("USER_ID") ?: currentUserId ?: return
+        val isCurrentUser = (currentUserId == targetUserId)
+
+        setupUI(targetUserId, isCurrentUser)
+        setupRecyclerView()
+        setupObservers()
+        setupFollowListNavigation()
+
+        viewModel.loadUserProfile(targetUserId, isCurrentUser)
+        viewModel.loadUserPosts(targetUserId)
+    }
+
+
+    private fun setupUI(targetUserId: String,isCurrentUser: Boolean) {
+        if (isCurrentUser) {
+            binding.btnLogout.visibility = View.VISIBLE
+            binding.btnFollow.visibility = View.GONE
+            binding.btnEditUsername.visibility = View.VISIBLE
+
+            binding.btnEditUsername.setOnClickListener {
+                showEditUsernameDialog(targetUserId)
+            }
+
+            // Long click to change profile picture
+            binding.imgProfile.setOnLongClickListener {
+                showChangeProfileImageDialog()
+                true
+            }
+
+            // Click to logout with confirmation
+            binding.btnLogout.setOnClickListener {
+                showLogoutConfirmationDialog()
+            }
+        } else {
+            // Foreign profile: hide logout and disable long click
+            binding.btnLogout.visibility = View.GONE
+            binding.btnFollow.visibility = View.VISIBLE
+            binding.imgProfile.setOnLongClickListener(null)
+            binding.btnFollow.setOnClickListener {
+                viewModel.toggleFollow(targetUserId)
+            }
+        }
+    }
+
+    private fun setupRecyclerView() {
+        binding.rvProfilePosts.layoutManager = GridLayoutManager(context, 3)
+        adapter = ProfileAdapter(emptyList()) { post ->
+            val fragment = PostDetailsFragment()
+            val bundle = Bundle()
+            bundle.putSerializable("post", post)
+            fragment.arguments = bundle
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
+        binding.rvProfilePosts.adapter = adapter
+    }
+
+
+    private fun setupObservers() {
+        viewModel.userName.observe(viewLifecycleOwner) { name ->
+            binding.tvUserName.text = name
+        }
+
+        viewModel.profileImageUrl.observe(viewLifecycleOwner) { imageUrl ->
+            if (!imageUrl.isNullOrEmpty()) {
+                Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .circleCrop()
+                    .into(binding.imgProfile)
+
+                binding.imgProfile.setOnClickListener {
+                    showFullImageDialog(imageUrl)
+                }
+            } else {
+                binding.imgProfile.setImageResource(R.drawable.img_outfit)
+                binding.imgProfile.setOnClickListener(null)
+            }
+        }
+
+        viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
+            adapter.updatePosts(posts)
+            binding.tvPostsCount.text = "${posts.size} \nPosts"
+        }
+
+        viewModel.totalLikes.observe(viewLifecycleOwner) { likes ->
+            binding.tvTotalLikes.text = "$likes \nLikes"
+        }
+
+        viewModel.followersCount.observe(viewLifecycleOwner) { count ->
+            binding.tvFollowers.text = "$count \nFollowers"
+        }
+        viewModel.followingCount.observe(viewLifecycleOwner) { count ->
+            binding.tvFollowing.text = "$count \nFollowing"
+        }
+
+        viewModel.isFollowing.observe(viewLifecycleOwner) { isFollowing ->
+            if (isFollowing) {
+                binding.btnFollow.text = "Unfollow"
+                binding.btnFollow.setBackgroundColor(Color.parseColor("#787770"))
+            } else {
+                binding.btnFollow.text = "Follow"
+                binding.btnFollow.setBackgroundColor(Color.parseColor("#222222"))
+            }
+        }
+
+        // Observe Upload State for profile image updates
+        editViewModel.uploadState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UploadState.Loading -> {
+                    Toast.makeText(context, "Uploading image...", Toast.LENGTH_SHORT).show()
+                }
+                is UploadState.Success -> {
+                    Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                    editViewModel.resetUploadState()
+                }
+                is UploadState.Error -> {
+                    Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_SHORT).show()
+                    editViewModel.resetUploadState()
+                }
+                is UploadState.Idle -> { /* Do nothing */ }
+            }
+        }
+
+    }
+
+    private fun processAndUploadImage(uri: Uri) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        // Process image off the main thread to prevent UI freezing
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+            val imagePair = ImageUtils.processProfileImage(requireContext(), uri)
+
+            withContext(Dispatchers.Main) {
+                if (imagePair != null) {
+                    val (bitmap, imageBytes) = imagePair
+                    binding.imgProfile.setImageBitmap(bitmap)
+                    editViewModel.uploadProfileImage(uid, imageBytes)
+                } else {
+                    Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+
+    private fun showFullImageDialog(imageUrl: String) {
+        val dialog = Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        val imageView = ImageView(requireContext()).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+
+        Glide.with(this)
+            .load(imageUrl)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(imageView)
+
+        dialog.setContentView(imageView)
+        imageView.setOnClickListener { dialog.dismiss() }
+        dialog.show()
+    }
+
+    private fun showChangeProfileImageDialog() {
+        showConfirmDialog(
+            context = requireContext(),
+            title = "Change Profile Picture",
+            message = "Would you like to update your profile picture?",
+            positiveLabel = "Change",
+            onConfirm = { pickProfileImage.launch("image/*") }
+        )
+    }
+
+    private fun showEditUsernameDialog(uid: String) {
+        val dialogBinding = DialogEditUsernameBinding.inflate(LayoutInflater.from(requireContext()))
+        dialogBinding.etNewUsername.setText(binding.tvUserName.text)
+
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(dialogBinding.root)
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                (resources.displayMetrics.widthPixels * 0.9).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val loadingObserver = Observer<UsernameUpdateState> { state ->
+            when (state) {
+                is UsernameUpdateState.Loading -> {
+                    dialogBinding.btnSaveUsername.isEnabled = false
+                    dialogBinding.btnSaveUsername.text = "Saving..."
+                    dialogBinding.layoutUsername.error = null
+                }
+                is UsernameUpdateState.Error -> {
+                    dialogBinding.btnSaveUsername.isEnabled = true
+                    dialogBinding.btnSaveUsername.text = "Save"
+                    dialogBinding.layoutUsername.error = state.message
+                    editViewModel.resetUsernameUpdateState()
+                }
+                is UsernameUpdateState.Success -> {
+                    Toast.makeText(context, "Username updated!", Toast.LENGTH_SHORT).show()
+                    editViewModel.resetUsernameUpdateState()
+                    dialog.dismiss()
+                }
+                else -> { }
+            }
+        }
+        editViewModel.usernameUpdateState.observe(viewLifecycleOwner, loadingObserver)
+        dialog.setOnDismissListener {
+            editViewModel.usernameUpdateState.removeObserver(loadingObserver)
+        }
+
+        dialogBinding.btnSaveUsername.setOnClickListener {
+            val newName = dialogBinding.etNewUsername.text.toString()
+            editViewModel.updateUsername(uid, newName)
+        }
+        dialogBinding.btnCancelUsername.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    private fun showLogoutConfirmationDialog() {
+        showConfirmDialog(
+            context = requireContext(),
+            title = "Log Out",
+            message = "Are you sure you want to log out of STYLISH?",
+            positiveLabel = "Log Out",
+            onConfirm = {
+                FirebaseAuth.getInstance().signOut()
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+        )
+    }
+
+    private fun setupFollowListNavigation() {
+        binding.tvFollowers.setOnClickListener { openFollowList("FOLLOWERS") }
+        binding.tvFollowing.setOnClickListener { openFollowList("FOLLOWING") }
+    }
+
+    private fun openFollowList(mode: String) {
+        val fragment = FollowListFragment()
+        fragment.arguments = Bundle().apply {
+            putString("USER_ID", targetUserId)
+            putString("MODE", mode)
+        }
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

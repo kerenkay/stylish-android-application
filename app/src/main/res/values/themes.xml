@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.StylishAndroidApplication" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="ShapeRounded16">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+    <style name="ShapeCircle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="SmallFloatingHint" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">10sp</item> </style>
+
+    <style name="SmallExpandedHint" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">14sp</item> </style>
+
+    <style name="AppBottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="android:minHeight">56dp</item>
+        <item name="itemIconSize">24dp</item>
+    </style>
+
+    <style name="OutfitInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="expandedHintEnabled">false</item>
+        <item name="boxCornerRadiusBottomEnd">15dp</item>
+        <item name="boxCornerRadiusBottomStart">15dp</item>
+        <item name="boxCornerRadiusTopEnd">15dp</item>
+        <item name="boxCornerRadiusTopStart">15dp</item>
+        <item name="iconSize">18dp</item>
+    </style>
+
+    <style name="StylishBottomSheetDialog" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/StylishBottomSheet</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <style name="StylishBottomSheet" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bg_bottom_sheet</item>
+    </style>
+
+    <style name="OutfitAutoCompleteText" parent="Widget.AppCompat.AutoCompleteTextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:inputType">text</item>
+        <item name="android:hint">type brand...</item></style>
+
+</resources>
